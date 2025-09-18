@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Stitch Design</title>
+<link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#f97306",
+                        "background-light": "#f8f7f5",
+                        "background-dark": "#23180f",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "Noto Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-zinc-900 dark:text-zinc-100">
+<div class="flex flex-col min-h-screen">
+<header class="sticky top-0 z-10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm">
+<div class="flex items-center justify-between p-4">
+<button class="flex items-center justify-center w-10 h-10 rounded-full text-zinc-900 dark:text-zinc-100">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<button class="flex items-center justify-center w-10 h-10 rounded-full text-zinc-900 dark:text-zinc-100">
+<span class="material-symbols-outlined">shopping_cart</span>
+</button>
+</div>
+</header>
+<main class="flex-grow">
+<div class="w-full h-64 bg-center bg-cover" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB6hhmSA06a1hoqaZbbjv3Mvj3cYKtiPmo3BjD6qaFHU8crX0FuKmRx0j2wX3wlQRWfwMaJxk0qyV6z5Muol-nIIHhebUV_65giL1nw1tA7mt2CFHggFBxUYIwGbH8-BN_Us8rxtsa2sLhCDVzULZ1bM8gKJOvV7fOYcvzMJvXVogMqU3e4at_ft6ERgJ5qYlNsvvC3JKmBImMgRC5fjwiezPuNtBPUutt6ZHQQVwR0eK6tMMMgtOoHB1dqIwFz1CAdH7yaFyCmw14");'></div>
+<div class="p-4 space-y-4">
+<h1 class="text-2xl font-bold text-zinc-900 dark:text-zinc-100">Spicy Chicken Sandwich</h1>
+<p class="text-zinc-600 dark:text-zinc-400">
+                    A juicy, grilled chicken breast marinated in a spicy blend of herbs and spices, topped with crisp lettuce, ripe tomatoes, and a tangy aioli sauce, all nestled in a toasted brioche bun.
+                </p>
+<div>
+<h3 class="text-lg font-bold text-zinc-900 dark:text-zinc-100">Choose your sides</h3>
+<div class="flex flex-wrap gap-2 mt-2">
+<label class="relative flex items-center px-4 py-2 border rounded-full cursor-pointer border-zinc-200 dark:border-zinc-700 has-[:checked]:border-primary has-[:checked]:bg-primary/10 has-[:checked]:text-primary">
+<input checked="" class="absolute w-0 h-0 opacity-0" name="side" type="radio"/>
+<span class="text-sm font-medium">Fries</span>
+</label>
+<label class="relative flex items-center px-4 py-2 border rounded-full cursor-pointer border-zinc-200 dark:border-zinc-700 has-[:checked]:border-primary has-[:checked]:bg-primary/10 has-[:checked]:text-primary">
+<input class="absolute w-0 h-0 opacity-0" name="side" type="radio"/>
+<span class="text-sm font-medium">Onion Rings</span>
+</label>
+<label class="relative flex items-center px-4 py-2 border rounded-full cursor-pointer border-zinc-200 dark:border-zinc-700 has-[:checked]:border-primary has-[:checked]:bg-primary/10 has-[:checked]:text-primary">
+<input class="absolute w-0 h-0 opacity-0" name="side" type="radio"/>
+<span class="text-sm font-medium">Salad</span>
+</label>
+</div>
+</div>
+</div>
+</main>
+<footer class="sticky bottom-0 bg-background-light dark:bg-background-dark">
+<div class="p-4">
+<button class="w-full px-5 py-3 font-bold text-white rounded-lg bg-primary">
+<span>Add to Cart - $12.99</span>
+</button>
+</div>
+<div class="flex justify-around py-2 border-t border-zinc-200 dark:border-zinc-800">
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+<span class="text-xs font-medium">Cardápio</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-zinc-500 dark:text-zinc-400" href="#">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="text-xs font-medium">Carrinho</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-zinc-500 dark:text-zinc-400" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="text-xs font-medium">Pedidos</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-zinc-500 dark:text-zinc-400" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-xs font-medium">Perfil</span>
+</a>
+</div>
+</footer>
+</div>
+
+</body></html>

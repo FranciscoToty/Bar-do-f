@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+<link as="style" href="https://fonts.googleapis.com/css2?display=swap&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900&amp;family=Plus+Jakarta+Sans%3Awght%40400%3B500%3B700%3B800" onload="this.rel='stylesheet'" rel="stylesheet"/>
+<title>Restaurante</title>
+<link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#f97306",
+              "background-light": "#f8f7f5",
+              "background-dark": "#23180f",
+            },
+            fontFamily: {
+              "display": ["Plus Jakarta Sans"],
+            },
+            borderRadius: {
+              "DEFAULT": "0.25rem",
+              "lg": "0.5rem",
+              "xl": "0.75rem",
+              "full": "9999px"
+            },
+          },
+        },
+      };
+    </script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark justify-between overflow-x-hidden">
+<div class="flex-grow">
+<header class="flex items-center p-4 pb-2 justify-between sticky top-0 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm z-10">
+<h1 class="text-xl font-bold text-background-dark dark:text-background-light flex-1 text-center">Restaurante</h1>
+<button class="flex items-center justify-center rounded-full h-10 w-10 bg-primary text-white">
+<span class="material-symbols-outlined">
+              shopping_cart
+            </span>
+</button>
+</header>
+<main class="px-4 pb-4">
+<h2 class="text-2xl font-bold text-background-dark dark:text-background-light py-5">Pratos do Dia</h2>
+<div class="flex overflow-x-auto gap-4 pb-4 [-ms-scrollbar-style:none] [scrollbar-width:none] [&amp;::-webkit-scrollbar]:hidden">
+<a class="flex flex-col gap-3 rounded-xl min-w-60 flex-shrink-0 group" href="#">
+<div class="w-full aspect-square bg-cover bg-center rounded-xl overflow-hidden shadow-lg transition-transform duration-300 group-hover:scale-105" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDrcGga2mjWQLw3ub6Z1t4mqexSdTFGmo70tIiyV_xLBl76MIV6yuTlt5GX8_A5yUYhWW_uVqT7y5jbSJ1GdvL-4BqcOKUrdkmHUmLDGOdq9YW5ooVAnlttUNcv8MAX2IWTOpWnqh11oF3iMDUVFSjpmGXnpdtW5NCw5MaCku_J--3P8LKh-reo3Djedwpn6gSqT_HqvT03ikZ7c2ly0bqmCdZmDuOT0gIT_Coe96QFizHolFGv82ILnwsFWcEoSaG6Ot0S9Es8KrI");'></div>
+<p class="text-base font-semibold text-background-dark dark:text-background-light">Massa Italiana</p>
+</a>
+<a class="flex flex-col gap-3 rounded-xl min-w-60 flex-shrink-0 group" href="#">
+<div class="w-full aspect-square bg-cover bg-center rounded-xl overflow-hidden shadow-lg transition-transform duration-300 group-hover:scale-105" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDyI8209S_oa6D_pC7-FjRoiuy4posZmDj8_yqV2LtHtEkO5mlegEOxMQQ1iHQyAYttahrbW7IDQX2lYcpUSg3DcKsmv1RLkR4nFsDqxwxClQ4v4uoX_u8pMR008W6KohQww1Mrk-WVTgPzEQFuuygd8pBVK8MKoLcV8-80TUM0NZCL9XYu-Iv_4EskEPAyAki0drB_KZsbhhUzB5i23zCyyZ5WzehvaPH4SZLC4bTJeq8RR9f5qxIRllil3TuMqeC6KLv72-1StHg");'></div>
+<p class="text-base font-semibold text-background-dark dark:text-background-light">Pizza Margherita</p>
+</a>
+<a class="flex flex-col gap-3 rounded-xl min-w-60 flex-shrink-0 group" href="#">
+<div class="w-full aspect-square bg-cover bg-center rounded-xl overflow-hidden shadow-lg transition-transform duration-300 group-hover:scale-105" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC2xG1i1YxHuD1rRbnc8cc3KJFmSZZ1SFZF72uuYc1S_gGZcWlRsvEci6u8hlvRyHUfSOIkSsvktcPls0hEQinH4HECafpo6T_mjxpUifTrUi6OfVvhcnJI-NvS3eWN5Xsyo6VDc4dGK9nTh_1-i_0wxIPNUmaWRUv1apwSRjCA2TF9FAVh269EQMDycpDvrVcMlCGNcMf6PVesB3VW2SOeQ22EyJFOh8a7Hx4W3OfRk_-8ThwK3SXJav_LefaPgCZdJyBuP7aCfG4");'></div>
+<p class="text-base font-semibold text-background-dark dark:text-background-light">Hambúrguer Gourmet</p>
+</a>
+</div>
+</main>
+</div>
+<nav class="sticky bottom-0 bg-background-light dark:bg-background-dark border-t border-primary/20 dark:border-primary/30">
+<div class="flex justify-around items-center px-4 pt-2 pb-4">
+<a class="flex flex-col items-center justify-end gap-1 text-primary" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+<p class="text-xs font-medium tracking-wide">Cardápio</p>
+</a>
+<a class="flex flex-col items-center justify-end gap-1 text-background-dark/60 dark:text-background-light/60" href="carrinho.html">
+<span class="material-symbols-outlined">shopping_cart</span>
+<p class="text-xs font-medium tracking-wide">Carrinho</p>
+</a>
+<a class="flex flex-col items-center justify-end gap-1 text-background-dark/60 dark:text-background-light/60" href="ver pedidos.html">
+<span class="material-symbols-outlined">receipt_long</span>
+<p class="text-xs font-medium tracking-wide">Pedidos</p>
+</a>
+<a class="flex flex-col items-center justify-end gap-1 text-background-dark/60 dark:text-background-light/60" href="login.html">
+<span class="material-symbols-outlined">person</span>
+<p class="text-xs font-medium tracking-wide">Perfil</p>
+</a>
+</div>
+</nav>
+</div>
+
+</body></html>
