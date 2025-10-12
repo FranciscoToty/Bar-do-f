@@ -1,13 +1,14 @@
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDENLJSPpFeeZAqSGW4QYw1rG7wUDoDPnA",
-  authDomain: "bardof-c1b4d.firebaseapp.com",
-  databaseURL: "https://bardof-c1b4d-default-rtdb.firebaseio.com",
-  projectId: "bardof-c1b4d",
-  storageBucket: "bardof-c1b4d.firebasestorage.app",
-  messagingSenderId: "360363951793",
-  appId: "1:360363951793:web:3d707868438ee651fa0490"
+  apiKey: FIREBASE_API_KEY,
+  authDomain: "arquivox-c9d74.firebaseapp.com",
+  databaseURL: "https://arquivox-c9d74-default-rtdb.firebaseio.com",
+  projectId: "arquivox-c9d74",
+  storageBucket: "arquivox-c9d74.firebasestorage.app",
+  messagingSenderId: "235350186717",
+  appId: "1:235350186717:web:6273c8f7e998257d5e9934"
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();

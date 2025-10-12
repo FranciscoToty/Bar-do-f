@@ -42,7 +42,7 @@
             </header>
             <main class="flex-grow flex flex-col justify-center px-6">
             <h1 class="text-3xl font-bold text-black dark:text-white mb-8">Criar conta</h1>
-            <form action="#" class="space-y-4">
+            <form onsubmit="cadastrarUsuario(event)" class="space-y-4">
             <div>
             <label class="sr-only" for="name">Nome</label>
             <input class="w-full h-14 px-4 bg-primary/10 dark:bg-primary/20 text-black dark:text-white placeholder-black/50 dark:placeholder-white/50 border-none rounded-lg focus:ring-2 focus:ring-primary" id="name" name="name" placeholder="Nome" type="text"/>
@@ -59,7 +59,7 @@
             <label class="sr-only" for="confirm-password">Confirmar senha</label>
             <input class="w-full h-14 px-4 bg-primary/10 dark:bg-primary/20 text-black dark:text-white placeholder-black/50 dark:placeholder-white/50 border-none rounded-lg focus:ring-2 focus:ring-primary" id="confirm-password" name="confirm-password" placeholder="Confirmar senha" type="password"/>
             </div>
-            <button onclick="cadastrarUsuario()"
+            <button
                 class="w-full h-14 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors" type="submit">
                                 Criar conta
             </button>
@@ -74,7 +74,8 @@
         <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
         <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
-        <script src=".js"></script>
+        <script src="secrets.js"></script>
+        <script src="cadastro.js"></script>
         <script src="firebaseconfig.js"></script>
     </body>
 </html>
