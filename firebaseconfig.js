@@ -1,20 +1,23 @@
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getDatabase } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js";
 
-const firebaseConfig = {
-  apiKey: FIREBASE_API_KEY,
-  authDomain: "arquivox-c9d74.firebaseapp.com",
-  databaseURL: "https://arquivox-c9d74-default-rtdb.firebaseio.com",
-  projectId: "arquivox-c9d74",
-  storageBucket: "arquivox-c9d74.firebasestorage.app",
-  messagingSenderId: "235350186717",
-  appId: "1:235350186717:web:6273c8f7e998257d5e9934"
+// Importa as funções necessárias do Firebase SDK v9 (modular)
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+import { getDatabase } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+
+ const firebaseConfig = {
+  apiKey: "AIzaSyDENLJSPpFeeZAqSGW4QYw1rG7wUDoDPnA",
+  authDomain: "bardof-c1b4d.firebaseapp.com",
+  databaseURL: "https://bardof-c1b4d-default-rtdb.firebaseio.com",
+  projectId: "bardof-c1b4d",
+  storageBucket: "bardof-c1b4d.firebasestorage.app",
+  messagingSenderId: "360363951793",
+  appId: "1:360363951793:web:3d707868438ee651fa0490"
 };
 
-// Initialize Firebase
+// Inicializa o Firebase
 const app = initializeApp(firebaseConfig);
 
-// Exporta os serviços que você quer usar
-export const db = getDatabase(app);
-export default app;
+// Inicializa o Realtime Database
+const db = getDatabase(app);
+
+// Exporta o db para usar em outros arquivos
+export { db };
