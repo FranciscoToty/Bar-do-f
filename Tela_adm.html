@@ -1,139 +1,92 @@
 <!DOCTYPE html>
-<html lang="pt-br"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Painel de Administração</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
-<script>
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#F97316',
-                        "background-light": '#FFFFFF',
-                        "background-dark": '#1A1A1A',
-                        'card-light': '#F3F4F6',
-                        'card-dark': '#2D2D2D',
-                        'text-light': '#1F2937',
-                        'text-dark': '#E5E7EB',
-                        'subtext-light': '#6B7280',
-                        'subtext-dark': '#9CA3AF',
-                    },
-                    fontFamily: {
-                        display: ['Inter', 'sans-serif'],
-                    },
-                    borderRadius: {
-                        DEFAULT: '0.5rem',
-                    },
-                },
-            },
-        };
-    </script>
-<style>
-        .material-symbols-outlined {
-            font-variation-settings:
-            'FILL' 0,
-            'wght' 400,
-            'GRAD' 0,
-            'opsz' 24
-        }
-    </style>
-<style>
-    body {
-      min-height: max(884px, 100dvh);
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Painel de Administração</title>
+
+  <!-- Tailwind e Ícones -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: '#F97316',
+            "background-light": '#FFFFFF',
+            "background-dark": '#1A1A1A',
+            'card-light': '#F3F4F6',
+            'card-dark': '#2D2D2D',
+            'text-light': '#1F2937',
+            'text-dark': '#E5E7EB',
+            'subtext-light': '#6B7280',
+            'subtext-dark': '#9CA3AF',
+          },
+          fontFamily: { display: ['Inter', 'sans-serif'] },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     }
+    body { min-height: max(884px, 100dvh); }
   </style>
-  </head>
+</head>
+
 <body class="bg-background-light dark:bg-background-dark font-display text-text-light dark:text-text-dark">
-<div class="container mx-auto p-4 max-w-md">
-<header class="flex items-center justify-between py-4">
-<h1 class="text-2xl font-bold text-text-light dark:text-text-dark">Painel de Admin</h1>
-<button class="text-primary">
-<span class="material-symbols-outlined">
-                    logout
-                </span>
-</button>
-</header>
-<div class="mb-6">
-<h2 class="text-xl font-semibold mb-4 text-text-light dark:text-text-dark">Adicionar Novo Prato</h2>
-<div class="bg-card-light dark:bg-card-dark p-4 rounded-lg">
-<form class="space-y-4">
-<div>
-<label class="block text-sm font-medium text-subtext-light dark:text-subtext-dark" for="dish-name">Nome do Prato</label>
-<input class="mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm text-text-light dark:text-text-dark" id="dish-name" name="dish-name" type="text"/>
-</div>
-<div>
-<label class="block text-sm font-medium text-subtext-light dark:text-subtext-dark" for="dish-description">Descrição</label>
-<textarea class="mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm text-text-light dark:text-text-dark" id="dish-description" name="dish-description" rows="3"></textarea>
-</div>
-<div>
-<label class="block text-sm font-medium text-subtext-light dark:text-subtext-dark" for="dish-price">Preço</label>
-<input class="mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm text-text-light dark:text-text-dark" id="dish-price" name="dish-price" type="number"/>
-</div>
-<div>
-<label class="block text-sm font-medium text-subtext-light dark:text-subtext-dark" for="dish-image">Imagem do Prato</label>
-<input class="mt-1 block w-full text-sm text-subtext-light dark:text-subtext-dark file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20" id="dish-image" name="dish-image" type="file"/>
-</div>
-<button class="w-full bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-orange-600 transition-colors" type="submit">
-                        Adicionar Prato
-                    </button>
-</form>
-</div>
-</div>
-<div>
-<h2 class="text-xl font-semibold mb-4 text-text-light dark:text-text-dark">Pratos Ativos</h2>
-<div class="space-y-4">
-<div class="bg-card-light dark:bg-card-dark p-4 rounded-lg flex items-center justify-between">
-<div class="flex items-center space-x-4">
-<img alt="Salada fresca" class="w-16 h-16 rounded-md object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCG6j4ZL5ILeowhdUoerYP09rYvNTixRg9yoQj68VDfs81C4RoqizuZDkcK04PJ-_4pMW6bEm-8aWj_yXDEDf0zO4oKdJJs0nl5p8AfLgPuSoEeQsG1XyckrxnV8969vSd6uVRQZmKivdyu6OibTCpj1swax33yYDgHopZglHXj6RW8c8sGDYna9R9vaBxnzH3C4YbEuEgrCO7D6zPNa54exVphfum3GI7kxOc-K2pOvfi9w_YYsGC05tsmWziifEh0sNTCqRTJrA"/>
-<div>
-<h3 class="font-semibold text-text-light dark:text-text-dark">Salada Fresca</h3>
-<p class="text-sm text-subtext-light dark:text-subtext-dark">R$ 25,00</p>
-</div>
-</div>
-<button class="text-red-500 hover:text-red-700 dark:hover:text-red-400">
-<span class="material-symbols-outlined">
-                            delete
-                        </span>
-</button>
-</div>
-<div class="bg-card-light dark:bg-card-dark p-4 rounded-lg flex items-center justify-between">
-<div class="flex items-center space-x-4">
-<img alt="Pizza de Pepperoni" class="w-16 h-16 rounded-md object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvnFrKDd6A_LWAIJPPWXC3dSq33nC3WE2-P7mO5NxD5_uzPzE1WZ_-_LJ2GOggnhVENBK_tBIRqwZbmCLJv9ihr__pHRD3w4smzrrrvTizKvtK4SjoxjXbrQMwQHcI_pHSZuOAybTR2Z8A95xlneYnn_TrK5sHEIvvylaB7WXgkDWbhBs-QF2JipAm333dsb01tPwJj3dKQgFAecJnJqDo_16-FB-6mdOKkYagFo8Ox6iHpJvR-UGGS9zhIH-HeGkGe4x0kvQIeA"/>
-<div>
-<h3 class="font-semibold text-text-light dark:text-text-dark">Pizza de Pepperoni</h3>
-<p class="text-sm text-subtext-light dark:text-subtext-dark">R$ 45,00</p>
-</div>
-</div>
-<button class="text-red-500 hover:text-red-700 dark:hover:text-red-400">
-<span class="material-symbols-outlined">
-                            delete
-                        </span>
-</button>
-</div>
-<div class="bg-card-light dark:bg-card-dark p-4 rounded-lg flex items-center justify-between">
-<div class="flex items-center space-x-4">
-<img alt="Panquecas Americanas" class="w-16 h-16 rounded-md object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9U663OStgFKeHnO2DujPBZLvz4gkgseaNzzYKcjFvFOmizPYJsXkhcWWPU6dOqJ-OYjNxFGTYoxGuMA3GLt40ryxsy_YydILYKNaZa_MCIJ25pjnWAFX5n71B9ikYDvLVaTMH0DRVfZmN0aIrWSVKXQUepshYoGtguYRTbNf8j1aQceQA0M5YsTKmBdo1uUVsp4IKIa2EvQygh5eeRt0smQkLvPBc2qAaH12yC7rxhdypvPVf5RiySKq4OWHfa4b18icTxyXb2w"/>
-<div>
-<h3 class="font-semibold text-text-light dark:text-text-dark">Panquecas Americanas</h3>
-<p class="text-sm text-subtext-light dark:text-subtext-dark">R$ 30,00</p>
-</div>
-</div>
-<button class="text-red-500 hover:text-red-700 dark:hover:text-red-400">
-<span class="material-symbols-outlined">
-                            delete
-                        </span>
-</button>
-</div>
-</div>
-</div>
-</div>
-<!-- Adicione isso antes de fechar o </body> no seu HTML -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
-<script src="Tela_adm.js"></script>
-<script src="firebaseconfig.js"></script>
-</body></html>
+  <div class="container mx-auto p-4 max-w-md">
+    <header class="flex items-center justify-between py-4">
+      <h1 class="text-2xl font-bold">Painel de Admin</h1>
+      <button id="logoutBtn" class="text-primary">
+        <span class="material-symbols-outlined">logout</span>
+      </button>
+    </header>
+
+    <div class="mb-6">
+      <h2 class="text-xl font-semibold mb-4">Adicionar Novo Prato</h2>
+      <div class="bg-card-light dark:bg-card-dark p-4 rounded-lg">
+        <form class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium" for="dish-name">Nome do Prato</label>
+            <input id="dish-name" name="dish-name" type="text" class="mt-1 block w-full border rounded-md py-2 px-3 dark:bg-gray-700 dark:border-gray-600"/>
+          </div>
+          <div>
+            <label class="block text-sm font-medium" for="dish-description">Descrição</label>
+            <textarea id="dish-description" rows="3" class="mt-1 block w-full border rounded-md py-2 px-3 dark:bg-gray-700 dark:border-gray-600"></textarea>
+          </div>
+          <div>
+            <label class="block text-sm font-medium" for="dish-price">Preço</label>
+            <input id="dish-price" name="dish-price" type="number" step="0.01" class="mt-1 block w-full border rounded-md py-2 px-3 dark:bg-gray-700 dark:border-gray-600"/>
+          </div>
+          <div>
+            <label class="block text-sm font-medium" for="dish-image">Imagem do Prato</label>
+            <input id="dish-image" name="dish-image" type="file" accept="image/*" class="mt-1 block w-full text-sm"/>
+          </div>
+          <button type="submit" class="w-full bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-orange-600 transition-colors">
+            Adicionar Prato
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div>
+      <h2 class="text-xl font-semibold mb-4">Pratos Ativos</h2>
+      <div class="space-y-4" id="lista-pratos">
+        <!-- Aqui serão listados os pratos -->
+        <div class="text-center py-8">
+          <p class="text-subtext-light dark:text-subtext-dark">Carregando pratos...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- APENAS este script aqui -->
+  <script type="module" src="./tela_adm.js"></script>
+</body>
+</html>
