@@ -6,8 +6,8 @@ window.cadastrarUsuario = async function (event) {
     const email = document.getElementById('email').value.trim();
     const senha = document.getElementById('password').value;
     const confirmaSenha = document.getElementById('confirm-password').value;
-    const tipo = document.getElementById('tipo').value;
-    const turma = document.getElementById('turma').value.trim();
+    //const tipo = document.getElementById('tipo').value;
+    //const turma = document.getElementById('turma').value.trim();
 
     // Validação de senha
     if (senha !== confirmaSenha) {
@@ -19,9 +19,9 @@ window.cadastrarUsuario = async function (event) {
     const resultado = await auth.fazerCadastro({
         nome,
         email,
-        senha,
-        tipo,
-        turma
+        senha
+        //tipo,
+        //turma
     });
 
     if (resultado.sucesso) {

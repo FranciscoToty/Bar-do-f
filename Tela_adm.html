@@ -9,6 +9,10 @@
   <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
 
+  <!-- ✅ IMPORTANTE: Carrega Firebase e Auth -->
+  <script type="module" src="./firebaseconfig.js"></script>
+  <script type="module" src="./auth.js"></script>
+
   <script>
     tailwind.config = {
       darkMode: "class",
@@ -41,41 +45,83 @@
 
 <body class="bg-background-light dark:bg-background-dark font-display text-text-light dark:text-text-dark">
   <div class="container mx-auto p-4 max-w-md">
+    
+    <!-- Header -->
     <header class="flex items-center justify-between py-4">
-      <h1 class="text-2xl font-bold">Painel de Admin</h1>
-      <button id="logoutBtn" class="text-primary">
-        <span class="material-symbols-outlined">logout</span>
+      <div>
+        <h1 class="text-2xl font-bold">Painel de Admin</h1>
+        <p id="admin-info" class="text-sm text-subtext-light dark:text-subtext-dark mt-1">Carregando...</p>
+      </div>
+      <button id="logoutBtn" class="text-primary hover:text-orange-600 transition-colors">
+        <span class="material-symbols-outlined text-3xl">logout</span>
       </button>
     </header>
 
+    <!-- Formulário de Adicionar/Editar Prato -->
     <div class="mb-6">
       <h2 class="text-xl font-semibold mb-4">Adicionar Novo Prato</h2>
       <div class="bg-card-light dark:bg-card-dark p-4 rounded-lg">
-        <form class="space-y-4">
+        <form id="form-prato" class="space-y-4">
           <div>
             <label class="block text-sm font-medium" for="dish-name">Nome do Prato</label>
-            <input id="dish-name" name="dish-name" type="text" class="mt-1 block w-full border rounded-md py-2 px-3 dark:bg-gray-700 dark:border-gray-600"/>
+            <input 
+              id="dish-name" 
+              name="dish-name" 
+              type="text" 
+              required
+              class="mt-1 block w-full border rounded-md py-2 px-3 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary focus:border-transparent"
+            />
           </div>
+          
           <div>
             <label class="block text-sm font-medium" for="dish-description">Descrição</label>
-            <textarea id="dish-description" rows="3" class="mt-1 block w-full border rounded-md py-2 px-3 dark:bg-gray-700 dark:border-gray-600"></textarea>
+            <textarea 
+              id="dish-description" 
+              rows="3" 
+              required
+              class="mt-1 block w-full border rounded-md py-2 px-3 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary focus:border-transparent"
+            ></textarea>
           </div>
+          
           <div>
-            <label class="block text-sm font-medium" for="dish-price">Preço</label>
-            <input id="dish-price" name="dish-price" type="number" step="0.01" class="mt-1 block w-full border rounded-md py-2 px-3 dark:bg-gray-700 dark:border-gray-600"/>
+            <label class="block text-sm font-medium" for="dish-price">Preço (R$)</label>
+            <input 
+              id="dish-price" 
+              name="dish-price" 
+              type="number" 
+              step="0.01" 
+              min="0"
+              required
+              class="mt-1 block w-full border rounded-md py-2 px-3 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary focus:border-transparent"
+            />
           </div>
+          
           <div>
-  <label class="block text-sm font-medium" for="dish-image-url">URL da Imagem (opcional)</label>
-  <input id="dish-image-url" name="dish-image-url" type="url" placeholder="https://exemplo.com/imagem.jpg" class="mt-1 block w-full border rounded-md py-2 px-3 dark:bg-gray-700 dark:border-gray-600"/>
-  <p class="text-xs text-subtext-light dark:text-subtext-dark mt-1">Cole o link de uma imagem hospedada online</p>
-</div>
-          <button type="submit" class="w-full bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-orange-600 transition-colors">
+            <label class="block text-sm font-medium" for="dish-image-url">URL da Imagem (opcional)</label>
+            <input 
+              id="dish-image-url" 
+              name="dish-image-url" 
+              type="url" 
+              placeholder="https://exemplo.com/imagem.jpg" 
+              class="mt-1 block w-full border rounded-md py-2 px-3 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary focus:border-transparent"
+            />
+            <p class="text-xs text-subtext-light dark:text-subtext-dark mt-1">
+              Cole o link de uma imagem hospedada online
+            </p>
+          </div>
+          
+          <button 
+            type="submit" 
+            id="submit-btn"
+            class="w-full bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-orange-600 transition-colors"
+          >
             Adicionar Prato
           </button>
         </form>
       </div>
     </div>
 
+    <!-- Lista de Pratos Ativos -->
     <div>
       <h2 class="text-xl font-semibold mb-4">Pratos Ativos</h2>
       <div class="space-y-4" id="lista-pratos">
@@ -87,7 +133,50 @@
     </div>
   </div>
 
-  <!-- APENAS este script aqui -->
+  <!-- ✅ PROTEÇÃO DE ADMIN + Script Principal -->
+  <script type="module">
+    // ========================================
+    // PROTEÇÃO DE ADMIN
+    // ========================================
+    
+    // Aguarda o auth.js carregar
+    if (!window.auth) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    
+    // Verifica se está logado
+    if (!auth.estaLogado()) {
+      alert('⚠️ Acesso negado! Você precisa estar logado.');
+      window.location.href = 'login.html';
+      throw new Error('Não autorizado'); // Para a execução
+    }
+    
+    // Verifica se é admin
+    if (!auth.isAdmin()) {
+      alert('⚠️ Acesso negado! Apenas administradores podem acessar esta página.');
+      window.location.href = 'index.html';
+      throw new Error('Não autorizado'); // Para a execução
+    }
+    
+    // ✅ Se chegou aqui, é um admin autenticado!
+    const usuarioAdmin = auth.getUsuarioLogado();
+    console.log('✅ Admin autenticado:', usuarioAdmin.nome);
+    
+    // Exibe nome do admin no header
+    document.getElementById('admin-info').textContent = 
+      `Bem-vindo, ${usuarioAdmin.nome} (Admin)`;
+    
+    // ========================================
+    // BOTÃO DE LOGOUT
+    // ========================================
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      if (confirm('Deseja sair do painel de administração?')) {
+        auth.fazerLogout(); // Usa o método do auth.js
+      }
+    });
+  </script>
+
+  <!-- Script principal da tela admin -->
   <script type="module" src="./tela_adm.js"></script>
 </body>
 </html>
