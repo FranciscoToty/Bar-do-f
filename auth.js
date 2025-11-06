@@ -1,338 +1,360 @@
-/**
- * auth.js - Sistema Universal de Autenticação
- * Inclua este script em TODAS as páginas do site
- * <script src="auth.js"></script>
- */
+// auth.js - Sistema de Autenticação Firebase
+// ============================================
+// Importa Firebase (certifique-se que firebaseconfig.js está carregado ANTES)
 
-// ========================================
-// CONFIGURAÇÃO
-// ========================================
+import { db } from './firebaseconfig.js';
+import { ref, get, child, push, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
-const CONFIG = {
-    // Páginas que NÃO precisam de login (públicas)
-    paginasPublicas: ['index.html', 'login.html', 'cadastro.html', 'carrinho.html', 'login.html', ''],
-    
-    // Páginas restritas a admin
-    paginasAdmin: ['admin.html', 'painel-admin.html', 'gerenciar.html'],
-    
-    // Página de redirecionamento após login
-    paginaPosLogin: 'dashboard.html',
-    
-    // Página de login
-    paginaLogin: 'login.html'
-};
+// ============================================
+// OBJETO PRINCIPAL DE AUTENTICAÇÃO
+// ============================================
 
-// ========================================
-// FUNÇÕES PRINCIPAIS
-// ========================================
+const auth = {
+  
+  // ========================================
+  // 1. FAZER LOGIN
+  // ========================================
+  async fazerLogin(email, senha) {
+    try {
+      console.log('🔐 Tentando login...');
+      
+      if (!email || !senha) {
+        throw new Error('Email e senha são obrigatórios!');
+      }
 
-/**
- * Verifica se o usuário está logado
- * @returns {Object|null} Dados do usuário ou null
- */
-function getUsuarioLogado() {
-    const usuario = sessionStorage.getItem('usuarioLogado');
-    return usuario ? JSON.parse(usuario) : null;
-}
+      // Busca todos os usuários
+      const dbRef = ref(db);
+      const snapshot = await get(child(dbRef, 'usuarios'));
 
-/**
- * Verifica se está logado
- * @returns {boolean}
- */
-function estaLogado() {
-    return getUsuarioLogado() !== null;
-}
+      if (!snapshot.exists()) {
+        throw new Error('Nenhum usuário cadastrado no sistema!');
+      }
 
-/**
- * Salva dados do usuário no sessionStorage
- * @param {Object} dadosUsuario - Dados do usuário
- */
-function salvarLogin(dadosUsuario) {
+      // Procura o usuário pelo email e senha
+      let usuarioEncontrado = null;
+      let usuarioId = null;
+
+      snapshot.forEach((childSnapshot) => {
+        const usuario = childSnapshot.val();
+        
+        // Verifica email e senha
+        if (usuario.email === email && usuario.senha === senha) {
+          usuarioEncontrado = usuario;
+          usuarioId = childSnapshot.key;
+        }
+      });
+
+      // Se não encontrou
+      if (!usuarioEncontrado) {
+        throw new Error('Email ou senha incorretos!');
+      }
+
+      // Verifica se usuário está ativo
+      if (usuarioEncontrado.ativo === false) {
+        throw new Error('Usuário desativado. Entre em contato com o administrador.');
+      }
+
+      // Salva dados no sessionStorage
+      const dadosUsuario = {
+        id: usuarioId,
+        nome: usuarioEncontrado.nome,
+        email: usuarioEncontrado.email,
+        tipo: usuarioEncontrado.tipo || 'aluno',
+        turma: usuarioEncontrado.turma || null,
+        telefone: usuarioEncontrado.telefone || null
+      };
+
+      this.salvarLogin(dadosUsuario);
+
+      console.log('✅ Login realizado com sucesso!', dadosUsuario);
+      
+      return {
+        sucesso: true,
+        usuario: dadosUsuario,
+        mensagem: `Bem-vindo(a), ${dadosUsuario.nome}!`
+      };
+
+    } catch (error) {
+      console.error('❌ Erro no login:', error);
+      
+      return {
+        sucesso: false,
+        mensagem: error.message || 'Erro ao fazer login'
+      };
+    }
+  },
+
+  // ========================================
+  // 2. FAZER CADASTRO
+  // ========================================
+  async fazerCadastro(dados) {
+    try {
+      console.log('📝 Iniciando cadastro...');
+      
+      // Validações
+      if (!dados.nome || !dados.email || !dados.senha) {
+        throw new Error('Nome, email e senha são obrigatórios!');
+      }
+
+      if (dados.senha.length < 6) {
+        throw new Error('A senha deve ter no mínimo 6 caracteres!');
+      }
+
+      // Verifica se email já existe
+      const emailExiste = await this.verificarEmailExiste(dados.email);
+      
+      if (emailExiste) {
+        throw new Error('Este email já está cadastrado!');
+      }
+
+      // Prepara dados do usuário
+      const novoUsuario = {
+        nome: dados.nome.trim(),
+        email: dados.email.trim().toLowerCase(),
+        senha: dados.senha,
+        tipo: dados.tipo || 'aluno',
+        turma: dados.turma || null,
+        telefone: dados.telefone || null,
+        dataCadastro: new Date().toISOString(),
+        ativo: true
+      };
+
+      // Salva no Firebase
+      const usuariosRef = ref(db, 'usuarios');
+      const resultado = await push(usuariosRef, novoUsuario);
+
+      console.log('✅ Cadastro realizado com sucesso!', resultado.key);
+
+      return {
+        sucesso: true,
+        usuarioId: resultado.key,
+        mensagem: 'Cadastro realizado com sucesso!'
+      };
+
+    } catch (error) {
+      console.error('❌ Erro no cadastro:', error);
+      
+      return {
+        sucesso: false,
+        mensagem: error.message || 'Erro ao fazer cadastro'
+      };
+    }
+  },
+
+  // ========================================
+  // 3. VERIFICAR SE EMAIL JÁ EXISTE
+  // ========================================
+  async verificarEmailExiste(email) {
+    try {
+      const dbRef = ref(db);
+      const snapshot = await get(child(dbRef, 'usuarios'));
+
+      if (!snapshot.exists()) {
+        return false;
+      }
+
+      let existe = false;
+
+      snapshot.forEach((childSnapshot) => {
+        const usuario = childSnapshot.val();
+        if (usuario.email === email.trim().toLowerCase()) {
+          existe = true;
+        }
+      });
+
+      return existe;
+
+    } catch (error) {
+      console.error('Erro ao verificar email:', error);
+      return false;
+    }
+  },
+
+  // ========================================
+  // 4. SALVAR LOGIN NO SESSIONSTORAGE
+  // ========================================
+  salvarLogin(dadosUsuario) {
     sessionStorage.setItem('usuarioLogado', JSON.stringify(dadosUsuario));
-    console.log('✅ Login salvo:', dadosUsuario.nome);
-}
+    console.log('💾 Sessão salva:', dadosUsuario);
+  },
 
-/**
- * Remove login e redireciona
- */
-function fazerLogout() {
+  // ========================================
+  // 5. VERIFICAR SE ESTÁ LOGADO
+  // ========================================
+  estaLogado() {
+    const usuario = sessionStorage.getItem('usuarioLogado');
+    return usuario !== null;
+  },
+
+  // ========================================
+  // 6. OBTER USUÁRIO LOGADO
+  // ========================================
+  getUsuarioLogado() {
+    try {
+      const usuario = sessionStorage.getItem('usuarioLogado');
+      
+      if (!usuario) {
+        return null;
+      }
+
+      return JSON.parse(usuario);
+
+    } catch (error) {
+      console.error('Erro ao obter usuário logado:', error);
+      return null;
+    }
+  },
+
+  // ========================================
+  // 7. FAZER LOGOUT
+  // ========================================
+  fazerLogout() {
     sessionStorage.removeItem('usuarioLogado');
     console.log('👋 Logout realizado');
-    window.location.href = CONFIG.paginaLogin;
-}
+    window.location.href = 'login.html';
+  },
 
-/**
- * Verifica se o usuário é admin
- * @returns {boolean}
- */
-function isAdmin() {
-    const usuario = getUsuarioLogado();
-    if (!usuario) return false;
-    return usuario.tipo === 'admin' || usuario.tipo === 'administrador';
-}
-
-/**
- * Obtém a página atual
- * @returns {string}
- */
-function getPaginaAtual() {
-    const path = window.location.pathname;
-    const pagina = path.split('/').pop();
-    return pagina || 'index.html';
-}
-
-/**
- * Verifica se a página atual é pública
- * @returns {boolean}
- */
-function isPaginaPublica() {
-    const paginaAtual = getPaginaAtual();
-    return CONFIG.paginasPublicas.includes(paginaAtual);
-}
-
-/**
- * Verifica se a página atual requer admin
- * @returns {boolean}
- */
-function isPaginaAdmin() {
-    const paginaAtual = getPaginaAtual();
-    return CONFIG.paginasAdmin.includes(paginaAtual);
-}
-
-/**
- * Proteção principal - verifica acesso
- */
-function verificarAcesso() {
-    const paginaAtual = getPaginaAtual();
-    const logado = estaLogado();
-    const admin = isAdmin();
-
-    console.log('🔐 Verificando acesso:', {
-        pagina: paginaAtual,
-        logado: logado,
-        admin: admin
-    });
-
-    // Se é página pública, libera acesso
-    if (isPaginaPublica()) {
-        console.log('✅ Página pública - acesso liberado');
-        
-        // Se já está logado e tentou acessar login, redireciona para dashboard
-        if (logado && paginaAtual === 'login.html') {
-            console.log('↪️ Já está logado, redirecionando...');
-            window.location.href = CONFIG.paginaPosLogin;
-        }
-        return;
-    }
-
-    // Se não está logado, redireciona para login
-    if (!logado) {
-        console.log('❌ Não logado - redirecionando para login');
-        window.location.href = CONFIG.paginaLogin;
-        return;
-    }
-
-    // Se é página admin e não é admin, nega acesso
-    if (isPaginaAdmin() && !admin) {
-        console.log('🚫 Acesso negado - requer admin');
-        mostrarAcessoNegado();
-        return;
-    }
-
-    console.log('✅ Acesso permitido');
-}
-
-/**
- * Mostra mensagem de acesso negado
- */
-function mostrarAcessoNegado() {
-    document.body.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f3f4f6; font-family: 'Plus Jakarta Sans', sans-serif;">
-            <div style="background: white; border-radius: 1rem; padding: 3rem; max-width: 400px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.1);">
-                <div style="font-size: 4rem; margin-bottom: 1rem;">🚫</div>
-                <h2 style="font-size: 1.5rem; font-weight: 700; color: #1f2937; margin-bottom: 0.5rem;">Acesso Negado</h2>
-                <p style="color: #6b7280; margin-bottom: 2rem;">Você não tem permissão para acessar esta página.</p>
-                <button onclick="window.location.href='dashboard.html'" style="background: #f97306; color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 600; border: none; cursor: pointer; width: 100%;">
-                    Voltar ao Dashboard
-                </button>
-            </div>
-        </div>
-    `;
-}
-
-/**
- * Preenche elementos da página com dados do usuário
- */
-function preencherDadosUsuario() {
-    const usuario = getUsuarioLogado();
+  // ========================================
+  // 8. VERIFICAR SE É ADMIN
+  // ========================================
+  isAdmin() {
+    const usuario = this.getUsuarioLogado();
     
     if (!usuario) {
-        console.log('⚠️ Nenhum usuário logado para preencher');
-        return;
+      return false;
     }
 
-    console.log('📝 Preenchendo dados do usuário:', usuario.nome);
+    return usuario.tipo === 'admin';
+  },
 
-    // Preenche nome
-    document.querySelectorAll('.usuario-nome, [data-usuario="nome"]').forEach(el => {
-        el.textContent = usuario.nome;
-    });
-
-    // Preenche email
-    document.querySelectorAll('.usuario-email, [data-usuario="email"]').forEach(el => {
-        el.textContent = usuario.email;
-    });
-
-    // Preenche tipo
-    document.querySelectorAll('.usuario-tipo, [data-usuario="tipo"]').forEach(el => {
-        el.textContent = usuario.tipo;
-    });
-
-    // Preenche turma
-    document.querySelectorAll('.usuario-turma, [data-usuario="turma"]').forEach(el => {
-        el.textContent = usuario.turma || 'Não informada';
-    });
-
-    // Preenche ID
-    document.querySelectorAll('.usuario-id, [data-usuario="id"]').forEach(el => {
-        el.textContent = usuario.id;
-    });
-
-    // Mostra/esconde elementos baseado em admin
-    if (isAdmin()) {
-        document.querySelectorAll('[data-admin-only]').forEach(el => {
-            el.style.display = '';
-        });
-        document.querySelectorAll('[data-user-only]').forEach(el => {
-            el.style.display = 'none';
-        });
-    } else {
-        document.querySelectorAll('[data-admin-only]').forEach(el => {
-            el.style.display = 'none';
-        });
-        document.querySelectorAll('[data-user-only]').forEach(el => {
-            el.style.display = '';
-        });
+  // ========================================
+  // 9. PROTEGER ROTA (redireciona se não logado)
+  // ========================================
+  protegerRota(redirecionarPara = 'login.html') {
+    if (!this.estaLogado()) {
+      console.warn('⚠️ Acesso negado. Redirecionando para login...');
+      window.location.href = redirecionarPara;
+      return false;
     }
-}
+    return true;
+  },
 
-/**
- * Adiciona informações de login no header (se existir)
- */
-function adicionarInfoHeader() {
-    const usuario = getUsuarioLogado();
-    if (!usuario) return;
-
-    const header = document.querySelector('header');
-    if (!header) return;
-
-    // Verifica se já existe o info-usuario
-    if (document.getElementById('info-usuario')) return;
-
-    const infoDiv = document.createElement('div');
-    infoDiv.id = 'info-usuario';
-    infoDiv.style.cssText = 'display: flex; align-items: center; gap: 1rem;';
-    
-    infoDiv.innerHTML = `
-        <div style="text-align: right;">
-            <div style="font-size: 0.875rem; font-weight: 600; color: #1f2937;">${usuario.nome}</div>
-            <div style="font-size: 0.75rem; color: #6b7280;">${usuario.tipo}</div>
-        </div>
-        <button onclick="auth.fazerLogout()" style="background: #ef4444; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500; border: none; cursor: pointer;">
-            Sair
-        </button>
-    `;
-
-    header.appendChild(infoDiv);
-}
-
-/**
- * Mostra indicador de status de login
- */
-function mostrarStatusLogin() {
-    if (!estaLogado()) return;
-
-    const indicator = document.createElement('div');
-    indicator.id = 'login-indicator';
-    indicator.style.cssText = `
-        position: fixed;
-        bottom: 1rem;
-        right: 1rem;
-        background: #10b981;
-        color: white;
-        padding: 0.5rem 1rem;
-        border-radius: 9999px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        z-index: 9999;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    `;
-    
-    const usuario = getUsuarioLogado();
-    indicator.innerHTML = `
-        <span style="width: 8px; height: 8px; background: white; border-radius: 50%; display: inline-block;"></span>
-        Conectado como ${usuario.nome}
-    `;
-
-    document.body.appendChild(indicator);
-}
-
-// ========================================
-// INICIALIZAÇÃO AUTOMÁTICA
-// ========================================
-
-// Executa quando o DOM carregar
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', inicializar);
-} else {
-    inicializar();
-}
-
-function inicializar() {
-    console.log('🚀 Auth.js inicializado');
-    
-    // Verifica acesso
-    verificarAcesso();
-    
-    // Se estiver logado, preenche dados
-    if (estaLogado()) {
-        preencherDadosUsuario();
-        adicionarInfoHeader();
-        mostrarStatusLogin();
+  // ========================================
+  // 10. PROTEGER ROTA ADMIN (redireciona se não for admin)
+  // ========================================
+  protegerRotaAdmin(redirecionarPara = 'index.html') {
+    if (!this.estaLogado()) {
+      console.warn('⚠️ Acesso negado. Faça login primeiro.');
+      window.location.href = 'login.html';
+      return false;
     }
-}
 
-// ========================================
-// API GLOBAL
-// ========================================
+    if (!this.isAdmin()) {
+      console.warn('⚠️ Acesso negado. Apenas administradores.');
+      window.location.href = redirecionarPara;
+      return false;
+    }
 
-// Exporta funções globalmente
-window.auth = {
-    // Informações
-    getUsuarioLogado,
-    estaLogado,
-    isAdmin,
-    
-    // Ações
-    salvarLogin,
-    fazerLogout,
-    
-    // Verificações
-    verificarAcesso,
-    
-    // Utilitários
-    preencherDadosUsuario,
-    
-    // Config
-    config: CONFIG
+    return true;
+  },
+
+  // ========================================
+  // 11. ATUALIZAR DADOS DO USUÁRIO
+  // ========================================
+  async atualizarPerfil(novosDados) {
+    try {
+      const usuario = this.getUsuarioLogado();
+      
+      if (!usuario) {
+        throw new Error('Usuário não está logado!');
+      }
+
+      // Importa update do Firebase
+      const { update } = await import("https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js");
+      
+      const userRef = ref(db, `usuarios/${usuario.id}`);
+      await update(userRef, novosDados);
+
+      // Atualiza sessionStorage
+      const dadosAtualizados = { ...usuario, ...novosDados };
+      this.salvarLogin(dadosAtualizados);
+
+      console.log('✅ Perfil atualizado com sucesso!');
+
+      return {
+        sucesso: true,
+        mensagem: 'Perfil atualizado com sucesso!'
+      };
+
+    } catch (error) {
+      console.error('❌ Erro ao atualizar perfil:', error);
+      
+      return {
+        sucesso: false,
+        mensagem: error.message || 'Erro ao atualizar perfil'
+      };
+    }
+  },
+
+  // ========================================
+  // 12. ALTERAR SENHA
+  // ========================================
+  async alterarSenha(senhaAtual, novaSenha) {
+    try {
+      const usuario = this.getUsuarioLogado();
+      
+      if (!usuario) {
+        throw new Error('Usuário não está logado!');
+      }
+
+      // Verifica senha atual no Firebase
+      const userRef = ref(db, `usuarios/${usuario.id}`);
+      const snapshot = await get(userRef);
+
+      if (!snapshot.exists()) {
+        throw new Error('Usuário não encontrado!');
+      }
+
+      const dados = snapshot.val();
+
+      if (dados.senha !== senhaAtual) {
+        throw new Error('Senha atual incorreta!');
+      }
+
+      if (novaSenha.length < 6) {
+        throw new Error('A nova senha deve ter no mínimo 6 caracteres!');
+      }
+
+      // Atualiza senha
+      const { update } = await import("https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js");
+      await update(userRef, { senha: novaSenha });
+
+      console.log('✅ Senha alterada com sucesso!');
+
+      return {
+        sucesso: true,
+        mensagem: 'Senha alterada com sucesso!'
+      };
+
+    } catch (error) {
+      console.error('❌ Erro ao alterar senha:', error);
+      
+      return {
+        sucesso: false,
+        mensagem: error.message || 'Erro ao alterar senha'
+      };
+    }
+  }
 };
 
+// ============================================
+// EXPORTA O OBJETO AUTH GLOBALMENTE
+// ============================================
+window.auth = auth;
+
 // Log de inicialização
-console.log('✅ Sistema de autenticação carregado');
-if (estaLogado()) {
-    const usuario = getUsuarioLogado();
-    console.log('👤 Usuário logado:', usuario.nome, `(${usuario.tipo})`);
-}
+console.log('🔐 Sistema de Autenticação carregado!');
+console.log('📌 Disponível em: window.auth');
+
+// Exporta para módulos ES6
+export default auth;

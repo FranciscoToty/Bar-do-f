@@ -2,6 +2,12 @@
 import { db } from './firebaseconfig.js';
 import { ref, push } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
+// Verifica se está logado ao carregar a página
+if (!auth.estaLogado()) {
+    alert('Você precisa estar logado para acessar esta página!');
+    window.location.href = 'login.html';
+}
+
 // Referências do DOM
 const carrinhoItems = document.getElementById('carrinho-items');
 const subtotalEl = document.getElementById('subtotal');
