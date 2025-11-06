@@ -10,7 +10,7 @@
 
 const CONFIG = {
     // Páginas que NÃO precisam de login (públicas)
-    paginasPublicas: ['index.html', 'login.html', 'cadastro.html', ''],
+    paginasPublicas: ['index.html', 'login.html', 'cadastro.html', 'carrinho.html', 'login.html', ''],
     
     // Páginas restritas a admin
     paginasAdmin: ['admin.html', 'painel-admin.html', 'gerenciar.html'],

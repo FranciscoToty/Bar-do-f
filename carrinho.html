@@ -1,5 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-br"><head>
+  <head>
+  <script src="auth.js"></script>
+  <!-- resto do código -->
+</head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Carrinho de Compras</title>
@@ -52,19 +56,29 @@
 </div>
 
 <!-- Resumo do pedido -->
-<div id="resumo-pedido" class="mt-8 rounded-lg bg-zinc-100/50 p-4 dark:bg-zinc-800/20">
+<!-- Seleção de Horário -->
+<div class="mt-6 rounded-lg bg-zinc-100/50 p-4 dark:bg-zinc-800/20">
+  <label for="horario-retirada" class="block text-sm font-semibold mb-2">
+    Horário de Retirada <span class="text-red-500">*</span>
+  </label>
+  <select id="horario-retirada" class="w-full px-4 py-2 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-primary focus:border-transparent">
+    <option value="">Selecione o horário</option>
+  </select>
+  <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-2">
+    Horários disponíveis: 11:50 às 14:00
+  </p>
+</div>
+
+<!-- Resumo do pedido -->
+<div id="resumo-pedido" class="mt-6 rounded-lg bg-zinc-100/50 p-4 dark:bg-zinc-800/20">
   <h3 class="text-lg font-bold mb-4">Resumo do Pedido</h3>
   <div class="space-y-2 text-zinc-600 dark:text-zinc-400">
     <div class="flex justify-between">
       <span>Subtotal</span>
       <span id="subtotal" class="text-zinc-900 dark:text-zinc-100">R$ 0,00</span>
     </div>
-    <div class="flex justify-between">
-      <span>Taxa de Entrega</span>
-      <span id="taxa-entrega" class="text-zinc-900 dark:text-zinc-100">R$ 5,00</span>
-    </div>
     <hr class="my-2 border-zinc-200 dark:border-zinc-700"/>
-    <div class="flex justify-between font-bold text-zinc-900 dark:text-zinc-100">
+    <div class="flex justify-between font-bold text-zinc-900 dark:text-zinc-100 text-lg">
       <span>Total</span>
       <span id="total">R$ 0,00</span>
     </div>
@@ -87,7 +101,7 @@
 <span class="material-symbols-outlined"> shopping_cart </span>
 <span class="text-xs font-bold">Carrinho</span>
 </a>
-<a class="flex flex-col items-center gap-1 text-zinc-500 dark:text-zinc-400" href="verpedidos.html">
+<a class="flex flex-col items-center gap-1 text-zinc-500 dark:text-zinc-400" href="pedidos.html">
 <span class="material-symbols-outlined"> receipt_long </span>
 <span class="text-xs">Pedidos</span>
 </a>

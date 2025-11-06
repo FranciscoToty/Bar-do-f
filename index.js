@@ -15,9 +15,10 @@ function formatarPreco(preco) {
 
 // Função para criar card de prato
 // Função para criar card de prato
+// Função para criar card de prato
 function criarCardPrato(prato, pratoId) {
   const card = document.createElement('a');
-  card.className = 'flex flex-col gap-3 rounded-xl min-w-60 flex-shrink-0 group cursor-pointer';
+  card.className = 'flex flex-col gap-3 rounded-xl w-60 flex-shrink-0 group cursor-pointer';
   card.onclick = (e) => {
     e.preventDefault();
     adicionarAoCarrinho(pratoId, prato);
@@ -26,25 +27,25 @@ function criarCardPrato(prato, pratoId) {
   // HTML do card com ou sem imagem
   if (prato.imagemUrl) {
     card.innerHTML = `
-      <div class="w-full aspect-square bg-cover bg-center rounded-xl overflow-hidden shadow-lg transition-transform duration-300 group-hover:scale-105" 
+      <div class="w-full h-60 bg-cover bg-center rounded-xl overflow-hidden shadow-lg transition-transform duration-300 group-hover:scale-105" 
            style="background-image: url('${prato.imagemUrl}');">
       </div>
-      <div class="flex flex-col gap-1">
-        <p class="text-base font-semibold text-background-dark dark:text-background-light">${prato.nome}</p>
+      <div class="flex flex-col gap-1 h-24">
+        <p class="text-base font-semibold text-background-dark dark:text-background-light line-clamp-1">${prato.nome}</p>
         <p class="text-sm text-background-dark/60 dark:text-background-light/60 line-clamp-2">${prato.descricao}</p>
-        <p class="text-lg font-bold text-primary">R$ ${formatarPreco(prato.preco)}</p>
+        <p class="text-lg font-bold text-primary mt-auto">R$ ${formatarPreco(prato.preco)}</p>
       </div>
     `;
   } else {
     // Quando não há imagem, mostra um ícone
     card.innerHTML = `
-      <div class="w-full aspect-square rounded-xl overflow-hidden shadow-lg transition-transform duration-300 group-hover:scale-105 bg-primary/10 flex items-center justify-center">
+      <div class="w-full h-60 rounded-xl overflow-hidden shadow-lg transition-transform duration-300 group-hover:scale-105 bg-primary/10 flex items-center justify-center">
         <span class="material-symbols-outlined text-8xl text-primary/40">restaurant</span>
       </div>
-      <div class="flex flex-col gap-1">
-        <p class="text-base font-semibold text-background-dark dark:text-background-light">${prato.nome}</p>
+      <div class="flex flex-col gap-1 h-24">
+        <p class="text-base font-semibold text-background-dark dark:text-background-light line-clamp-1">${prato.nome}</p>
         <p class="text-sm text-background-dark/60 dark:text-background-light/60 line-clamp-2">${prato.descricao}</p>
-        <p class="text-lg font-bold text-primary">R$ ${formatarPreco(prato.preco)}</p>
+        <p class="text-lg font-bold text-primary mt-auto">R$ ${formatarPreco(prato.preco)}</p>
       </div>
     `;
   }
@@ -180,6 +181,13 @@ style.textContent = `
   .notificacao-carrinho {
     opacity: 0;
     transition: opacity 0.3s ease-in-out;
+  }
+  
+  .line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
   
   .line-clamp-2 {

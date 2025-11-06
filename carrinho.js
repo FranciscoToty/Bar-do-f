@@ -1,16 +1,13 @@
 // carrinho.js
 import { db } from './firebaseconfig.js';
-import { ref, push, set } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+import { ref, push } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
 // Referências do DOM
 const carrinhoItems = document.getElementById('carrinho-items');
 const subtotalEl = document.getElementById('subtotal');
-const taxaEntregaEl = document.getElementById('taxa-entrega');
 const totalEl = document.getElementById('total');
 const finalizarPedidoBtn = document.getElementById('finalizar-pedido');
-
-// Taxa de entrega fixa
-const TAXA_ENTREGA = 5.00;
+const horarioSelect = document.getElementById('horario-retirada');
 
 // Função para formatar preço
 function formatarPreco(preco) {
@@ -31,23 +28,51 @@ function salvarCarrinho(carrinho) {
 // Função para calcular totais
 function calcularTotais() {
   const carrinho = carregarCarrinho();
-  const subtotal = carrinho.reduce((total, item) => total + (item.preco * item.quantidade), 0);
-  const total = subtotal + TAXA_ENTREGA;
+  const total = carrinho.reduce((soma, item) => soma + (item.preco * item.quantidade), 0);
   
-  return { subtotal, taxaEntrega: TAXA_ENTREGA, total };
+  return { total };
 }
 
 // Função para atualizar exibição dos totais
 function atualizarTotais() {
-  const { subtotal, taxaEntrega, total } = calcularTotais();
+  const { total } = calcularTotais();
   
-  subtotalEl.textContent = `R$ ${formatarPreco(subtotal)}`;
-  taxaEntregaEl.textContent = `R$ ${formatarPreco(taxaEntrega)}`;
+  subtotalEl.textContent = `R$ ${formatarPreco(total)}`;
   totalEl.textContent = `R$ ${formatarPreco(total)}`;
   
   // Desabilita botão se carrinho vazio
   const carrinho = carregarCarrinho();
   finalizarPedidoBtn.disabled = carrinho.length === 0;
+}
+
+// Função para gerar horários disponíveis
+function gerarHorarios() {
+  const horarios = [];
+  const inicio = 11 * 60 + 50; // 11:50 em minutos
+  const fim = 14 * 60; // 14:00 em minutos
+  const intervalo = 10; // Intervalo de 10 minutos
+  
+  for (let minutos = inicio; minutos <= fim; minutos += intervalo) {
+    const horas = Math.floor(minutos / 60);
+    const mins = minutos % 60;
+    const horarioFormatado = `${String(horas).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+    horarios.push(horarioFormatado);
+  }
+  
+  return horarios;
+}
+
+// Preenche o select de horários
+function preencherHorarios() {
+  const horarios = gerarHorarios();
+  horarioSelect.innerHTML = '<option value="">Selecione o horário</option>';
+  
+  horarios.forEach(horario => {
+    const option = document.createElement('option');
+    option.value = horario;
+    option.textContent = horario;
+    horarioSelect.appendChild(option);
+  });
 }
 
 // Função para aumentar quantidade
@@ -75,7 +100,6 @@ function diminuirQuantidade(itemId) {
       renderizarCarrinho();
       mostrarNotificacao('Quantidade atualizada!');
     } else {
-      // Se quantidade é 1, remove o item
       removerItem(itemId);
     }
   }
@@ -92,6 +116,11 @@ function removerItem(itemId) {
   }
 }
 
+// Torna as funções globais
+window.aumentarQuantidade = aumentarQuantidade;
+window.diminuirQuantidade = diminuirQuantidade;
+window.removerItem = removerItem;
+
 // Função para criar card de item do carrinho
 function criarCardItem(item) {
   const subtotalItem = item.preco * item.quantidade;
@@ -99,7 +128,6 @@ function criarCardItem(item) {
   const div = document.createElement('div');
   div.className = 'flex items-center gap-4 bg-white dark:bg-zinc-800/30 p-3 rounded-lg';
   
-  // Imagem ou ícone padrão
   const imagemHtml = item.imagemUrl 
     ? `<img alt="${item.nome}" class="h-16 w-16 rounded-lg object-cover" src="${item.imagemUrl}"/>`
     : `<div class="h-16 w-16 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -127,7 +155,7 @@ function criarCardItem(item) {
       </div>
     </div>
     <button onclick="removerItem('${item.id}')" class="text-red-500 hover:text-red-600 transition-colors">
-      <span class="material-symbols-outlined"> delete </span>
+      <span class="material-symbols-outlined">delete</span>
     </button>
   `;
   
@@ -177,36 +205,61 @@ async function finalizarPedido() {
     return;
   }
   
+  // VERIFICA SE ESTÁ LOGADO
+  const estaLogado = window.auth?.estaLogado();
+  if (!estaLogado) {
+    if (confirm('Você precisa estar logado para fazer um pedido. Deseja ir para a página de login?')) {
+      window.location.href = 'login.html';
+    }
+    return;
+  }
+  
+  if (!horarioSelect.value) {
+    mostrarNotificacao('Por favor, selecione um horário de retirada!', 'erro');
+    horarioSelect.focus();
+    return;
+  }
+  
   try {
     finalizarPedidoBtn.disabled = true;
     finalizarPedidoBtn.textContent = 'Processando...';
     
-    const { subtotal, taxaEntrega, total } = calcularTotais();
+    const { total } = calcularTotais();
     
-    // Cria o pedido
-    const pedido = {
-      items: carrinho,
-      subtotal: subtotal,
-      taxaEntrega: taxaEntrega,
-      total: total,
-      status: 'pendente',
-      dataPedido: new Date().toISOString(),
-      timestamp: Date.now()
+    // Obtém dados do usuário logado
+    const usuario = window.auth.getUsuarioLogado();
+    
+    // Dados do usuário
+    const dadosUsuario = {
+      usuarioId: usuario.id || null,
+      usuarioNome: usuario.nome,
+      usuarioEmail: usuario.email || null,
+      usuarioTipo: usuario.tipo || 'cliente',
+      usuarioTurma: usuario.turma || null
     };
     
-    // Salva no Firebase
-    const pedidosRef = ref(db, 'pedidos');
-    const novoPedidoRef = await push(pedidosRef, pedido);
+    const pedido = {
+      // Dados do pedido
+      items: carrinho,
+      total: total,
+      horarioRetirada: horarioSelect.value,
+      status: 'pendente',
+      dataPedido: new Date().toISOString(),
+      timestamp: Date.now(),
+      
+      // Dados do usuário que fez o pedido
+      ...dadosUsuario
+    };
     
-    // Limpa o carrinho
+    const pedidosRef = ref(db, 'pedidos');
+    await push(pedidosRef, pedido);
+    
     localStorage.removeItem('carrinho');
     
-    // Mostra mensagem de sucesso
     mostrarNotificacao('Pedido realizado com sucesso!', 'sucesso');
     
-    // Redireciona após 1.5 segundos
     setTimeout(() => {
-      window.location.href = 'verpedidos.html';
+      window.location.href = 'pedidos.html';
     }, 1500);
     
   } catch (error) {
@@ -248,15 +301,57 @@ function mostrarNotificacao(mensagem, tipo = 'info') {
   }, 2000);
 }
 
-// Torna as funções globais para uso no HTML
-window.aumentarQuantidade = aumentarQuantidade;
-window.diminuirQuantidade = diminuirQuantidade;
-window.removerItem = removerItem;
+// Função para verificar login e mostrar aviso se necessário
+function verificarLogin() {
+  const estaLogado = window.auth?.estaLogado();
+  const usuario = window.auth?.getUsuarioLogado();
+  
+  if (estaLogado && usuario) {
+    console.log('✅ Usuário logado:', usuario.nome);
+    
+    // Mostra nome do usuário no cabeçalho
+    const header = document.querySelector('header h1');
+    if (header) {
+      const nomeUsuario = document.createElement('div');
+      nomeUsuario.className = 'text-xs text-zinc-500 dark:text-zinc-400 font-normal mt-1';
+      nomeUsuario.textContent = `Olá, ${usuario.nome}!`;
+      header.appendChild(nomeUsuario);
+    }
+  } else {
+    console.log('⚠️ Usuário não está logado');
+    
+    // Mostra aviso OBRIGATÓRIO de login
+    const aviso = document.createElement('div');
+    aviso.className = 'bg-red-100 dark:bg-red-900/30 border-2 border-red-500 dark:border-red-700 text-red-800 dark:text-red-200 px-4 py-4 rounded-lg mb-4';
+    aviso.innerHTML = `
+      <div class="flex items-start gap-3">
+        <span class="material-symbols-outlined text-2xl">lock</span>
+        <div class="flex-grow">
+          <p class="font-bold text-base mb-1">Login Obrigatório</p>
+          <p class="text-sm mb-3">
+            Você precisa estar logado para fazer um pedido.
+          </p>
+          <a href="login.html" class="inline-block bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-2 rounded-lg transition-colors">
+            Fazer Login Agora
+          </a>
+        </div>
+      </div>
+    `;
+    
+    const main = document.querySelector('main');
+    if (main) {
+      main.insertBefore(aviso, main.firstChild);
+    }
+    
+    // Desabilita o botão de finalizar pedido
+    finalizarPedidoBtn.disabled = true;
+    finalizarPedidoBtn.textContent = 'Login Necessário';
+    finalizarPedidoBtn.className = 'w-full h-12 rounded-lg bg-gray-400 text-white font-bold text-lg cursor-not-allowed opacity-50';
+  }
+}
 
-// Event listener para botão de finalizar pedido
 finalizarPedidoBtn.addEventListener('click', finalizarPedido);
 
-// Adiciona estilo para notificação
 const style = document.createElement('style');
 style.textContent = `
   .notificacao-carrinho {
@@ -273,7 +368,10 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// Renderiza o carrinho ao carregar a página
+// Verifica login ao carregar
+verificarLogin();
+
+preencherHorarios();
 renderizarCarrinho();
 
 console.log('Carrinho.js carregado com sucesso!');
