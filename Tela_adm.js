@@ -1,4 +1,4 @@
-// tela_adm.js - ATUALIZADO COM PROTEÇÃO
+// tela_adm.js - ATUALIZADO COM PREÇOS POR VARIAÇÃO (MANTENDO TUDO)
 import { db } from './firebaseconfig.js';
 import { 
   ref, 
@@ -10,10 +10,10 @@ import {
 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
 // ========================================
-// VERIFICAÇÃO DE ADMIN (segurança extra)
+// VERIFICAÇÃO DE ADMIN
 // ========================================
 if (!window.auth?.isAdmin()) {
-  console.error('❌ Acesso não autorizado ao tela_adm.js');
+  console.error('❌ Acesso não autorizado');
   throw new Error('Acesso negado');
 }
 
@@ -23,6 +23,7 @@ console.log('✅ tela_adm.js carregado - Admin autorizado');
 // REFERÊNCIAS DO DOM
 // ========================================
 const form = document.getElementById('form-prato');
+const itemTipo = document.getElementById('item-tipo');
 const dishName = document.getElementById('dish-name');
 const dishDescription = document.getElementById('dish-description');
 const dishPrice = document.getElementById('dish-price');
@@ -30,15 +31,39 @@ const dishImageUrl = document.getElementById('dish-image-url');
 const listaPratos = document.getElementById('lista-pratos');
 const submitBtn = document.getElementById('submit-btn');
 
-// Referência do database
 const pratosRef = ref(db, 'pratos');
 
-// ========================================
-// VARIÁVEIS DE CONTROLE
-// ========================================
 let modoEdicao = false;
 let pratoIdEmEdicao = null;
 let dadosOriginais = null;
+
+// ========================================
+// ✅ NOVA: OBTER VARIAÇÕES COM PREÇOS
+// ========================================
+function obterVariacoesComPrecos() {
+  const variacoes = {};
+  const checkboxes = document.querySelectorAll('input[name="variacao"]:checked');
+  
+  checkboxes.forEach(checkbox => {
+    const tipo = checkbox.value;
+    const precoInput = document.querySelector(`[data-preco-variacao="${tipo}"]`);
+    const preco = parseFloat(precoInput?.value);
+    
+    if (!isNaN(preco) && preco > 0) {
+      variacoes[tipo] = preco;
+    }
+  });
+  
+  return variacoes;
+}
+
+// ========================================
+// MANTIDO: OBTER VARIAÇÕES SEM PREÇO (COMPATIBILIDADE)
+// ========================================
+function obterVariacoesSelecionadas() {
+  const checkboxes = document.querySelectorAll('input[name="variacao"]:checked');
+  return Array.from(checkboxes).map(cb => cb.value);
+}
 
 // ========================================
 // FORMULÁRIO DE ADICIONAR/ATUALIZAR
@@ -46,68 +71,91 @@ let dadosOriginais = null;
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   
-  // Validação básica
-  if (!dishName.value.trim() || !dishDescription.value.trim() || !dishPrice.value) {
-    alert('❌ Por favor, preencha todos os campos obrigatórios!');
+  if (!dishName.value.trim() || !dishDescription.value.trim()) {
+    alert('❌ Preencha todos os campos obrigatórios!');
     return;
   }
 
-  const preco = parseFloat(dishPrice.value);
-  if (isNaN(preco) || preco <= 0) {
-    alert('❌ Por favor, insira um preço válido!');
-    return;
+  // ✅ NOVA VALIDAÇÃO: Verifica se prato tem pelo menos uma variação com preço
+  if (itemTipo.value === 'prato') {
+    const variacoesComPrecos = obterVariacoesComPrecos();
+    if (Object.keys(variacoesComPrecos).length === 0) {
+      alert('❌ Adicione pelo menos uma variação com preço para pratos!');
+      return;
+    }
+  }
+
+  // VALIDAÇÃO PARA BEBIDA
+  if (itemTipo.value === 'bebida') {
+    const preco = parseFloat(dishPrice.value);
+    if (isNaN(preco) || preco <= 0) {
+      alert('❌ Insira um preço válido para a bebida!');
+      return;
+    }
   }
 
   if (modoEdicao) {
-    await atualizarPrato();
+    await atualizarItem();
   } else {
-    await adicionarPrato();
+    await adicionarItem();
   }
 });
 
 // ========================================
-// ADICIONAR NOVO PRATO
+// ✅ ATUALIZADO: ADICIONAR ITEM COM PREÇOS POR VARIAÇÃO
 // ========================================
-async function adicionarPrato() {
+async function adicionarItem() {
   try {
     submitBtn.disabled = true;
     submitBtn.textContent = 'Adicionando...';
 
-    const novoPrato = {
+    const tipo = itemTipo.value;
+    const novoItem = {
+      tipo: tipo,
       nome: dishName.value.trim(),
       descricao: dishDescription.value.trim(),
-      preco: parseFloat(dishPrice.value),
       imagemUrl: dishImageUrl.value.trim() || '',
       criadoEm: Date.now(),
       criadoPor: auth.getUsuarioLogado().nome
     };
 
-    await push(pratosRef, novoPrato);
+    if (tipo === 'bebida') {
+      // BEBIDA: Salva preço único e sem variações
+      novoItem.preco = parseFloat(dishPrice.value);
+      novoItem.variacoes = {}; // Objeto vazio para compatibilidade
+    } else {
+      // PRATO: Salva variações com preços individuais
+      novoItem.variacoes = obterVariacoesComPrecos(); // ✅ NOVO: Objeto com preços
+      novoItem.preco = 0; // Não usado em pratos com variações
+    }
+
+    await push(pratosRef, novoItem);
     
     form.reset();
-    mostrarNotificacao('✅ Prato adicionado com sucesso!', 'sucesso');
+    mostrarNotificacao(`✅ ${tipo === 'bebida' ? 'Bebida' : 'Prato'} adicionado com sucesso!`, 'sucesso');
     
   } catch (error) {
-    console.error('❌ Erro ao adicionar prato:', error);
-    mostrarNotificacao('❌ Erro ao adicionar prato: ' + error.message, 'erro');
+    console.error('❌ Erro ao adicionar:', error);
+    mostrarNotificacao('❌ Erro ao adicionar: ' + error.message, 'erro');
   } finally {
     submitBtn.disabled = false;
-    submitBtn.textContent = 'Adicionar Prato';
+    submitBtn.textContent = 'Adicionar Item';
   }
 }
 
 // ========================================
-// ATUALIZAR PRATO EXISTENTE
+// ✅ ATUALIZADO: ATUALIZAR ITEM COM PREÇOS POR VARIAÇÃO
 // ========================================
-async function atualizarPrato() {
+async function atualizarItem() {
   try {
     submitBtn.disabled = true;
     submitBtn.textContent = 'Atualizando...';
 
-    const pratoAtualizado = {
+    const tipo = itemTipo.value;
+    const itemAtualizado = {
+      tipo: tipo,
       nome: dishName.value.trim(),
       descricao: dishDescription.value.trim(),
-      preco: parseFloat(dishPrice.value),
       imagemUrl: dishImageUrl.value.trim() || '',
       criadoEm: dadosOriginais.criadoEm || Date.now(),
       criadoPor: dadosOriginais.criadoPor || 'Admin',
@@ -115,21 +163,29 @@ async function atualizarPrato() {
       atualizadoPor: auth.getUsuarioLogado().nome
     };
 
-    await update(ref(db, `pratos/${pratoIdEmEdicao}`), pratoAtualizado);
+    if (tipo === 'bebida') {
+      itemAtualizado.preco = parseFloat(dishPrice.value);
+      itemAtualizado.variacoes = {};
+    } else {
+      itemAtualizado.variacoes = obterVariacoesComPrecos(); // ✅ NOVO
+      itemAtualizado.preco = 0;
+    }
+
+    await update(ref(db, `pratos/${pratoIdEmEdicao}`), itemAtualizado);
     
-    mostrarNotificacao('✅ Prato atualizado com sucesso!', 'sucesso');
+    mostrarNotificacao('✅ Item atualizado com sucesso!', 'sucesso');
     cancelarEdicao();
     
   } catch (error) {
-    console.error('❌ Erro ao atualizar prato:', error);
-    mostrarNotificacao('❌ Erro ao atualizar prato: ' + error.message, 'erro');
+    console.error('❌ Erro ao atualizar:', error);
+    mostrarNotificacao('❌ Erro ao atualizar: ' + error.message, 'erro');
   } finally {
     submitBtn.disabled = false;
   }
 }
 
 // ========================================
-// CANCELAR EDIÇÃO
+// MANTIDO: CANCELAR EDIÇÃO
 // ========================================
 function cancelarEdicao() {
   modoEdicao = false;
@@ -137,18 +193,15 @@ function cancelarEdicao() {
   dadosOriginais = null;
   form.reset();
   
-  submitBtn.textContent = 'Adicionar Prato';
+  submitBtn.textContent = 'Adicionar Item';
   submitBtn.className = 'w-full bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-orange-600 transition-colors';
   
-  // Remove botão de cancelar se existir
   const btnCancelar = document.getElementById('btn-cancelar-edicao');
-  if (btnCancelar) {
-    btnCancelar.remove();
-  }
+  if (btnCancelar) btnCancelar.remove();
 }
 
 // ========================================
-// CARREGAR E EXIBIR PRATOS
+// MANTIDO: CARREGAR E EXIBIR ITENS
 // ========================================
 onValue(pratosRef, (snapshot) => {
   listaPratos.innerHTML = '';
@@ -157,46 +210,92 @@ onValue(pratosRef, (snapshot) => {
     listaPratos.innerHTML = `
       <div class="text-center py-8">
         <span class="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-600">restaurant_menu</span>
-        <p class="text-subtext-light dark:text-subtext-dark mt-4">Nenhum prato cadastrado ainda.</p>
-        <p class="text-xs text-subtext-light dark:text-subtext-dark mt-2">Adicione o primeiro prato acima!</p>
+        <p class="text-subtext-light dark:text-subtext-dark mt-4">Nenhum item cadastrado.</p>
       </div>
     `;
     return;
   }
 
-  // Converte snapshot em array
-  const pratosArray = [];
+  const itensArray = [];
   snapshot.forEach((childSnapshot) => {
-    pratosArray.push({
+    itensArray.push({
       id: childSnapshot.key,
       ...childSnapshot.val()
     });
   });
   
-  // Ordena por data de criação (mais recentes primeiro)
-  pratosArray.sort((a, b) => (b.criadoEm || 0) - (a.criadoEm || 0));
+  itensArray.sort((a, b) => (b.criadoEm || 0) - (a.criadoEm || 0));
   
-  // Cria os cards
-  pratosArray.forEach((prato) => {
-    const pratoCard = criarCardPrato(prato, prato.id);
-    listaPratos.appendChild(pratoCard);
+  itensArray.forEach((item) => {
+    const card = criarCardItem(item, item.id);
+    listaPratos.appendChild(card);
   });
   
-  console.log(`📋 ${pratosArray.length} pratos carregados`);
+  console.log(`📋 ${itensArray.length} itens carregados`);
 });
 
 // ========================================
-// CRIAR CARD DE PRATO
+// ✅ ATUALIZADO: CRIAR CARD COM PREÇOS POR VARIAÇÃO
 // ========================================
-function criarCardPrato(prato, pratoId) {
+function criarCardItem(item, itemId) {
   const div = document.createElement('div');
   div.className = 'bg-card-light dark:bg-card-dark p-4 rounded-lg flex items-start gap-4 hover:shadow-lg transition-shadow';
   
-  // Imagem ou placeholder
-  const imagemHtml = prato.imagemUrl 
-    ? `<img src="${prato.imagemUrl}" alt="${prato.nome}" class="w-20 h-20 object-cover rounded-lg"/>` 
+  const icone = item.tipo === 'bebida' 
+    ? '<span class="material-symbols-outlined text-blue-500">local_cafe</span>'
+    : '<span class="material-symbols-outlined text-primary">restaurant</span>';
+  
+  const badge = item.tipo === 'bebida'
+    ? '<span class="text-xs px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 rounded-full">Bebida</span>'
+    : '<span class="text-xs px-2 py-1 bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 rounded-full">Prato</span>';
+  
+  // ✅ NOVO: Exibe variações com PREÇOS INDIVIDUAIS
+  let variacoesHtml = '';
+  if (item.tipo === 'prato' && item.variacoes) {
+    const emojis = {
+      frango: '🐔',
+      gado: '🥩',
+      porco: '🐷',
+      peixe: '🐟',
+      vegano: '🌱',
+      vegetariano: '🥗'
+    };
+    
+    // Verifica se variações é objeto (com preços) ou array (sem preços - compatibilidade)
+    if (typeof item.variacoes === 'object' && !Array.isArray(item.variacoes)) {
+      // NOVO FORMATO: Objeto com preços
+      const variacoesEntries = Object.entries(item.variacoes);
+      if (variacoesEntries.length > 0) {
+        variacoesHtml = '<div class="mt-3 space-y-1">';
+        variacoesEntries.forEach(([tipo, preco]) => {
+          variacoesHtml += `
+            <div class="flex justify-between items-center text-sm bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded">
+              <span>${emojis[tipo] || ''} ${tipo}</span>
+              <span class="font-bold text-primary">R$ ${preco.toFixed(2).replace('.', ',')}</span>
+            </div>
+          `;
+        });
+        variacoesHtml += '</div>';
+      }
+    } else if (Array.isArray(item.variacoes) && item.variacoes.length > 0) {
+      // FORMATO ANTIGO: Array sem preços (COMPATIBILIDADE)
+      variacoesHtml = `<div class="flex flex-wrap gap-1 mt-2">
+         ${item.variacoes.map(v => {
+           return `<span class="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded">${emojis[v] || ''} ${v}</span>`;
+         }).join('')}
+       </div>`;
+    }
+  }
+  
+  // Preço para bebidas
+  const precoHtml = item.tipo === 'bebida'
+    ? `<p class="text-primary font-bold mt-2">R$ ${item.preco.toFixed(2).replace('.', ',')}</p>`
+    : '';
+  
+  const imagemHtml = item.imagemUrl 
+    ? `<img src="${item.imagemUrl}" alt="${item.nome}" class="w-20 h-20 object-cover rounded-lg"/>` 
     : `<div class="w-20 h-20 bg-gray-300 dark:bg-gray-600 rounded-lg flex items-center justify-center">
-         <span class="material-symbols-outlined text-gray-500">restaurant</span>
+         ${icone}
        </div>`;
   
   div.innerHTML = `
@@ -204,60 +303,93 @@ function criarCardPrato(prato, pratoId) {
       ${imagemHtml}
     </div>
     <div class="flex-grow">
-      <h3 class="font-semibold text-lg">${prato.nome}</h3>
-      <p class="text-sm text-subtext-light dark:text-subtext-dark mt-1 line-clamp-2">${prato.descricao}</p>
-      <p class="text-primary font-bold mt-2">R$ ${prato.preco.toFixed(2).replace('.', ',')}</p>
-      ${prato.criadoPor ? `<p class="text-xs text-subtext-light dark:text-subtext-dark mt-1">Por: ${prato.criadoPor}</p>` : ''}
+      <div class="flex items-center gap-2 mb-1">
+        ${badge}
+      </div>
+      <h3 class="font-semibold text-lg">${item.nome}</h3>
+      <p class="text-sm text-subtext-light dark:text-subtext-dark mt-1 line-clamp-2">${item.descricao}</p>
+      ${variacoesHtml}
+      ${precoHtml}
     </div>
     <div class="flex flex-col gap-2">
-      <button data-edit="${pratoId}" class="text-blue-500 hover:text-blue-600 transition-colors p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded" title="Editar">
+      <button data-edit="${itemId}" class="text-blue-500 hover:text-blue-600 transition-colors p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded" title="Editar">
         <span class="material-symbols-outlined">edit</span>
       </button>
-      <button data-delete="${pratoId}" class="text-red-500 hover:text-red-600 transition-colors p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded" title="Excluir">
+      <button data-delete="${itemId}" class="text-red-500 hover:text-red-600 transition-colors p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded" title="Excluir">
         <span class="material-symbols-outlined">delete</span>
       </button>
     </div>
   `;
   
-  // Event listeners
   const btnEdit = div.querySelector('[data-edit]');
   const btnDelete = div.querySelector('[data-delete]');
   
-  btnEdit.addEventListener('click', () => editarPrato(pratoId));
-  btnDelete.addEventListener('click', () => excluirPrato(pratoId));
+  btnEdit.addEventListener('click', () => editarItem(itemId));
+  btnDelete.addEventListener('click', () => excluirItem(itemId));
   
   return div;
 }
 
 // ========================================
-// EDITAR PRATO
+// ✅ ATUALIZADO: EDITAR ITEM COM PREÇOS POR VARIAÇÃO
 // ========================================
-async function editarPrato(pratoId) {
+async function editarItem(itemId) {
   try {
-    const pratoRef = ref(db, `pratos/${pratoId}`);
-    const snapshot = await get(pratoRef);
+    const itemRef = ref(db, `pratos/${itemId}`);
+    const snapshot = await get(itemRef);
     
     if (!snapshot.exists()) {
-      mostrarNotificacao('❌ Prato não encontrado!', 'erro');
+      mostrarNotificacao('❌ Item não encontrado!', 'erro');
       return;
     }
     
-    const prato = snapshot.val();
-    dadosOriginais = prato;
+    const item = snapshot.val();
+    dadosOriginais = item;
     modoEdicao = true;
-    pratoIdEmEdicao = pratoId;
+    pratoIdEmEdicao = itemId;
     
-    // Preenche o formulário
-    dishName.value = prato.nome;
-    dishDescription.value = prato.descricao;
-    dishPrice.value = prato.preco;
-    dishImageUrl.value = prato.imagemUrl || '';
+    // Preenche campos básicos
+    itemTipo.value = item.tipo || 'prato';
+    dishName.value = item.nome;
+    dishDescription.value = item.descricao;
+    dishImageUrl.value = item.imagemUrl || '';
     
-    // Muda o botão de submit
-    submitBtn.textContent = 'Atualizar Prato';
+    if (item.tipo === 'bebida') {
+      dishPrice.value = item.preco;
+    } else {
+      // ✅ NOVO: Preenche variações COM PREÇOS
+      if (typeof item.variacoes === 'object' && !Array.isArray(item.variacoes)) {
+        // Formato novo: objeto com preços
+        document.querySelectorAll('input[name="variacao"]').forEach(cb => {
+          const tipo = cb.value;
+          const temVariacao = item.variacoes[tipo] !== undefined;
+          
+          cb.checked = temVariacao;
+          
+          if (temVariacao) {
+            const precoInput = document.querySelector(`[data-preco-variacao="${tipo}"]`);
+            if (precoInput) {
+              precoInput.value = item.variacoes[tipo];
+            }
+          }
+        });
+      } else if (Array.isArray(item.variacoes)) {
+        // Formato antigo: array sem preços (COMPATIBILIDADE)
+        document.querySelectorAll('input[name="variacao"]').forEach(cb => {
+          cb.checked = item.variacoes && item.variacoes.includes(cb.value);
+        });
+      }
+    }
+    
+    // Atualiza visibilidade dos campos
+    document.getElementById('variacoes-container').style.display = 
+      item.tipo === 'bebida' ? 'none' : 'block';
+    document.getElementById('preco-bebida-container').style.display = 
+      item.tipo === 'bebida' ? 'block' : 'none';
+    
+    submitBtn.textContent = 'Atualizar Item';
     submitBtn.className = 'w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors';
     
-    // Adiciona botão de cancelar
     let btnCancelar = document.getElementById('btn-cancelar-edicao');
     if (!btnCancelar) {
       btnCancelar = document.createElement('button');
@@ -269,51 +401,45 @@ async function editarPrato(pratoId) {
       form.appendChild(btnCancelar);
     }
     
-    // Scroll suave para o formulário
     window.scrollTo({ top: 0, behavior: 'smooth' });
     dishName.focus();
     
     mostrarNotificacao('✏️ Modo de edição ativado', 'info');
     
   } catch (error) {
-    console.error('❌ Erro ao carregar prato:', error);
-    mostrarNotificacao('❌ Erro ao carregar prato: ' + error.message, 'erro');
+    console.error('❌ Erro ao carregar item:', error);
+    mostrarNotificacao('❌ Erro ao carregar: ' + error.message, 'erro');
   }
 }
 
 // ========================================
-// EXCLUIR PRATO
+// MANTIDO: EXCLUIR ITEM
 // ========================================
-async function excluirPrato(pratoId) {
-  if (!confirm('⚠️ Tem certeza que deseja excluir este prato?\n\nEsta ação não pode ser desfeita!')) {
+async function excluirItem(itemId) {
+  if (!confirm('⚠️ Tem certeza que deseja excluir este item?\n\nEsta ação não pode ser desfeita!')) {
     return;
   }
 
   try {
-    await remove(ref(db, `pratos/${pratoId}`));
+    await remove(ref(db, `pratos/${itemId}`));
+    mostrarNotificacao('✅ Item excluído com sucesso!', 'sucesso');
     
-    mostrarNotificacao('✅ Prato excluído com sucesso!', 'sucesso');
-    
-    // Se estava editando este prato, cancela
-    if (pratoIdEmEdicao === pratoId) {
+    if (pratoIdEmEdicao === itemId) {
       cancelarEdicao();
     }
     
   } catch (error) {
-    console.error('❌ Erro ao excluir prato:', error);
-    mostrarNotificacao('❌ Erro ao excluir prato: ' + error.message, 'erro');
+    console.error('❌ Erro ao excluir:', error);
+    mostrarNotificacao('❌ Erro ao excluir: ' + error.message, 'erro');
   }
 }
 
 // ========================================
-// SISTEMA DE NOTIFICAÇÕES
+// MANTIDO: SISTEMA DE NOTIFICAÇÕES
 // ========================================
 function mostrarNotificacao(mensagem, tipo = 'info') {
-  // Remove notificação anterior
   const notificacaoAnterior = document.querySelector('.notificacao-admin');
-  if (notificacaoAnterior) {
-    notificacaoAnterior.remove();
-  }
+  if (notificacaoAnterior) notificacaoAnterior.remove();
   
   const cores = {
     sucesso: 'bg-green-500',
@@ -327,13 +453,11 @@ function mostrarNotificacao(mensagem, tipo = 'info') {
   
   document.body.appendChild(notificacao);
   
-  // Animação de entrada
   setTimeout(() => {
     notificacao.style.opacity = '1';
     notificacao.style.top = '1rem';
   }, 10);
   
-  // Remove após 3 segundos
   setTimeout(() => {
     notificacao.style.opacity = '0';
     notificacao.style.top = '-50px';
@@ -342,7 +466,7 @@ function mostrarNotificacao(mensagem, tipo = 'info') {
 }
 
 // ========================================
-// ESTILO ADICIONAL
+// MANTIDO: ESTILO ADICIONAL
 // ========================================
 const style = document.createElement('style');
 style.textContent = `
@@ -352,10 +476,7 @@ style.textContent = `
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
-  .notificacao-admin {
-    transition: all 0.3s ease-in-out;
-  }
 `;
 document.head.appendChild(style);
 
-console.log('✅ Sistema de gerenciamento de pratos carregado!');
+console.log('✅ Sistema de gerenciamento carregado com preços por variação!');

@@ -2,6 +2,7 @@
 <html lang="pt-br"><head>
   <head>
   <script type="module" src="./auth.js"></script>
+  <script type="module" src="./nav-update.js"></script>
 </head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
@@ -114,4 +115,17 @@
 
 <!-- Script do carrinho -->
 <script type="module" src="./carrinho.js"></script>
+<!-- Adicione ANTES do </body> no carrinho.html -->
+<script>
+// Atualiza link do perfil baseado no login
+document.addEventListener('DOMContentLoaded', function() {
+    const linkPerfil = document.querySelector('nav a[href="login.html"]');
+    
+    if (linkPerfil && window.auth && auth.estaLogado()) {
+        linkPerfil.href = 'perfil.html';
+        linkPerfil.classList.remove('text-zinc-500', 'dark:text-zinc-400');
+        linkPerfil.classList.add('text-primary');
+    }
+});
+</script>
 </body></html>

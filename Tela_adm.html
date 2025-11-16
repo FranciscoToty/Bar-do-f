@@ -40,6 +40,19 @@
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     }
     body { min-height: max(884px, 100dvh); }
+    
+    /* ✅ NOVO: Animação para mostrar campo de preço */
+    .preco-input-container {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    .variacao-checkbox:checked ~ .preco-input-container {
+      max-height: 100px;
+      opacity: 1;
+      margin-top: 0.5rem;
+    }
   </style>
 </head>
 
@@ -57,50 +70,179 @@
       </button>
     </header>
 
-    <!-- Formulário de Adicionar/Editar Prato -->
+    <!-- Formulário de Adicionar/Editar -->
     <div class="mb-6">
-      <h2 class="text-xl font-semibold mb-4">Adicionar Novo Prato</h2>
+      <h2 class="text-xl font-semibold mb-4">Adicionar Novo Item</h2>
       <div class="bg-card-light dark:bg-card-dark p-4 rounded-lg">
         <form id="form-prato" class="space-y-4">
+          
+          <!-- Tipo de Item -->
           <div>
-            <label class="block text-sm font-medium" for="dish-name">Nome do Prato</label>
+            <label class="block text-sm font-medium mb-2" for="item-tipo">Tipo de Item</label>
+            <select id="item-tipo" class="mt-1 block w-full border rounded-md py-2 px-3 dark:bg-gray-700 dark:border-gray-600" required>
+              <option value="prato">Prato</option>
+              <option value="bebida">Bebida</option>
+            </select>
+          </div>
+
+          <!-- Nome -->
+          <div>
+            <label class="block text-sm font-medium" for="dish-name">Nome</label>
             <input 
               id="dish-name" 
-              name="dish-name" 
               type="text" 
               required
+              placeholder="Ex: Pizza Margherita, Coca-Cola..."
               class="mt-1 block w-full border rounded-md py-2 px-3 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary focus:border-transparent"
             />
           </div>
           
+          <!-- Descrição -->
           <div>
             <label class="block text-sm font-medium" for="dish-description">Descrição</label>
             <textarea 
               id="dish-description" 
               rows="3" 
               required
+              placeholder="Descreva o item..."
               class="mt-1 block w-full border rounded-md py-2 px-3 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary focus:border-transparent"
             ></textarea>
           </div>
           
-          <div>
+          <!-- ✅ NOVO: Variações COM PREÇOS (apenas para pratos) -->
+          <div id="variacoes-container" class="space-y-3">
+            <label class="block text-sm font-medium">Variações e Preços</label>
+            <p class="text-xs text-subtext-light dark:text-subtext-dark mb-2">
+              Marque as variações e defina o preço de cada uma
+            </p>
+            
+            <!-- Frango -->
+            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" name="variacao" value="frango" class="variacao-checkbox w-4 h-4 text-primary rounded focus:ring-primary">
+                <span class="text-sm font-medium flex-grow">🐔 Frango</span>
+              </label>
+              <div class="preco-input-container">
+                <input 
+                  type="number" 
+                  data-preco-variacao="frango"
+                  step="0.01" 
+                  min="0"
+                  placeholder="Preço (R$)"
+                  class="w-full border rounded-md py-2 px-3 text-sm dark:bg-gray-700 dark:border-gray-600"
+                />
+              </div>
+            </div>
+
+            <!-- Gado -->
+            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" name="variacao" value="gado" class="variacao-checkbox w-4 h-4 text-primary rounded focus:ring-primary">
+                <span class="text-sm font-medium flex-grow">🥩 Gado (Carne Bovina)</span>
+              </label>
+              <div class="preco-input-container">
+                <input 
+                  type="number" 
+                  data-preco-variacao="gado"
+                  step="0.01" 
+                  min="0"
+                  placeholder="Preço (R$)"
+                  class="w-full border rounded-md py-2 px-3 text-sm dark:bg-gray-700 dark:border-gray-600"
+                />
+              </div>
+            </div>
+
+            <!-- Porco -->
+            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" name="variacao" value="porco" class="variacao-checkbox w-4 h-4 text-primary rounded focus:ring-primary">
+                <span class="text-sm font-medium flex-grow">🐷 Porco</span>
+              </label>
+              <div class="preco-input-container">
+                <input 
+                  type="number" 
+                  data-preco-variacao="porco"
+                  step="0.01" 
+                  min="0"
+                  placeholder="Preço (R$)"
+                  class="w-full border rounded-md py-2 px-3 text-sm dark:bg-gray-700 dark:border-gray-600"
+                />
+              </div>
+            </div>
+
+            <!-- Peixe -->
+            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" name="variacao" value="peixe" class="variacao-checkbox w-4 h-4 text-primary rounded focus:ring-primary">
+                <span class="text-sm font-medium flex-grow">🐟 Peixe</span>
+              </label>
+              <div class="preco-input-container">
+                <input 
+                  type="number" 
+                  data-preco-variacao="peixe"
+                  step="0.01" 
+                  min="0"
+                  placeholder="Preço (R$)"
+                  class="w-full border rounded-md py-2 px-3 text-sm dark:bg-gray-700 dark:border-gray-600"
+                />
+              </div>
+            </div>
+
+            <!-- Vegano -->
+            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" name="variacao" value="vegano" class="variacao-checkbox w-4 h-4 text-primary rounded focus:ring-primary">
+                <span class="text-sm font-medium flex-grow">🌱 Vegano</span>
+              </label>
+              <div class="preco-input-container">
+                <input 
+                  type="number" 
+                  data-preco-variacao="vegano"
+                  step="0.01" 
+                  min="0"
+                  placeholder="Preço (R$)"
+                  class="w-full border rounded-md py-2 px-3 text-sm dark:bg-gray-700 dark:border-gray-600"
+                />
+              </div>
+            </div>
+
+            <!-- Vegetariano -->
+            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" name="variacao" value="vegetariano" class="variacao-checkbox w-4 h-4 text-primary rounded focus:ring-primary">
+                <span class="text-sm font-medium flex-grow">🥗 Vegetariano</span>
+              </label>
+              <div class="preco-input-container">
+                <input 
+                  type="number" 
+                  data-preco-variacao="vegetariano"
+                  step="0.01" 
+                  min="0"
+                  placeholder="Preço (R$)"
+                  class="w-full border rounded-md py-2 px-3 text-sm dark:bg-gray-700 dark:border-gray-600"
+                />
+              </div>
+            </div>
+          </div>
+          
+          <!-- Preço (apenas para bebidas) -->
+          <div id="preco-bebida-container">
             <label class="block text-sm font-medium" for="dish-price">Preço (R$)</label>
             <input 
               id="dish-price" 
-              name="dish-price" 
               type="number" 
               step="0.01" 
               min="0"
-              required
+              placeholder="0.00"
               class="mt-1 block w-full border rounded-md py-2 px-3 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary focus:border-transparent"
             />
           </div>
           
+          <!-- URL da Imagem -->
           <div>
             <label class="block text-sm font-medium" for="dish-image-url">URL da Imagem (opcional)</label>
             <input 
               id="dish-image-url" 
-              name="dish-image-url" 
               type="url" 
               placeholder="https://exemplo.com/imagem.jpg" 
               class="mt-1 block w-full border rounded-md py-2 px-3 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -110,24 +252,24 @@
             </p>
           </div>
           
+          <!-- Botão Submit -->
           <button 
             type="submit" 
             id="submit-btn"
             class="w-full bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-orange-600 transition-colors"
           >
-            Adicionar Prato
+            Adicionar Item
           </button>
         </form>
       </div>
     </div>
 
-    <!-- Lista de Pratos Ativos -->
+    <!-- Lista de Itens Ativos -->
     <div>
-      <h2 class="text-xl font-semibold mb-4">Pratos Ativos</h2>
+      <h2 class="text-xl font-semibold mb-4">Itens Cadastrados</h2>
       <div class="space-y-4" id="lista-pratos">
-        <!-- Aqui serão listados os pratos -->
         <div class="text-center py-8">
-          <p class="text-subtext-light dark:text-subtext-dark">Carregando pratos...</p>
+          <p class="text-subtext-light dark:text-subtext-dark">Carregando itens...</p>
         </div>
       </div>
     </div>
@@ -135,45 +277,68 @@
 
   <!-- ✅ PROTEÇÃO DE ADMIN + Script Principal -->
   <script type="module">
-    // ========================================
-    // PROTEÇÃO DE ADMIN
-    // ========================================
-    
-    // Aguarda o auth.js carregar
     if (!window.auth) {
       await new Promise(resolve => setTimeout(resolve, 100));
     }
     
-    // Verifica se está logado
     if (!auth.estaLogado()) {
       alert('⚠️ Acesso negado! Você precisa estar logado.');
       window.location.href = 'login.html';
-      throw new Error('Não autorizado'); // Para a execução
+      throw new Error('Não autorizado');
     }
     
-    // Verifica se é admin
     if (!auth.isAdmin()) {
       alert('⚠️ Acesso negado! Apenas administradores podem acessar esta página.');
       window.location.href = 'index.html';
-      throw new Error('Não autorizado'); // Para a execução
+      throw new Error('Não autorizado');
     }
     
-    // ✅ Se chegou aqui, é um admin autenticado!
     const usuarioAdmin = auth.getUsuarioLogado();
     console.log('✅ Admin autenticado:', usuarioAdmin.nome);
     
-    // Exibe nome do admin no header
     document.getElementById('admin-info').textContent = 
       `Bem-vindo, ${usuarioAdmin.nome} (Admin)`;
     
-    // ========================================
-    // BOTÃO DE LOGOUT
-    // ========================================
     document.getElementById('logoutBtn').addEventListener('click', () => {
       if (confirm('Deseja sair do painel de administração?')) {
-        auth.fazerLogout(); // Usa o método do auth.js
+        auth.fazerLogout();
       }
     });
+    
+    // ========================================
+    // ✅ NOVO: CONTROLA VISIBILIDADE BASEADO NO TIPO
+    // ========================================
+    const tipoSelect = document.getElementById('item-tipo');
+    const variacoesContainer = document.getElementById('variacoes-container');
+    const precoBebidaContainer = document.getElementById('preco-bebida-container');
+    const dishPrice = document.getElementById('dish-price');
+    
+    function atualizarCamposPorTipo() {
+      if (tipoSelect.value === 'bebida') {
+        // Mostra preço único, esconde variações
+        variacoesContainer.style.display = 'none';
+        precoBebidaContainer.style.display = 'block';
+        dishPrice.required = true;
+        
+        // Desmarca todas as variações
+        document.querySelectorAll('input[name="variacao"]').forEach(cb => {
+          cb.checked = false;
+        });
+        // Limpa preços das variações
+        document.querySelectorAll('[data-preco-variacao]').forEach(input => {
+          input.value = '';
+        });
+      } else {
+        // Mostra variações, esconde preço único
+        variacoesContainer.style.display = 'block';
+        precoBebidaContainer.style.display = 'none';
+        dishPrice.required = false;
+        dishPrice.value = '';
+      }
+    }
+    
+    tipoSelect.addEventListener('change', atualizarCamposPorTipo);
+    atualizarCamposPorTipo(); // Inicializa corretamente
   </script>
 
   <!-- Script principal da tela admin -->
