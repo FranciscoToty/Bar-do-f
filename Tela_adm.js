@@ -1,4 +1,4 @@
-// tela_adm.js - ATUALIZADO COM PREÇOS POR VARIAÇÃO (MANTENDO TUDO)
+// tela_adm.js - CORRIGIDO: Validação de preços
 import { db } from './firebaseconfig.js';
 import { 
   ref, 
@@ -38,22 +38,39 @@ let pratoIdEmEdicao = null;
 let dadosOriginais = null;
 
 // ========================================
-// ✅ NOVA: OBTER VARIAÇÕES COM PREÇOS
+// ✅ CORRIGIDO: OBTER VARIAÇÕES COM PREÇOS
 // ========================================
 function obterVariacoesComPrecos() {
   const variacoes = {};
-  const checkboxes = document.querySelectorAll('input[name="variacao"]:checked');
+  const checkboxes = document.querySelectorAll('.variacao-checkbox:checked');
+  
+  console.log('🔍 Checkboxes marcados:', checkboxes.length);
   
   checkboxes.forEach(checkbox => {
     const tipo = checkbox.value;
     const precoInput = document.querySelector(`[data-preco-variacao="${tipo}"]`);
-    const preco = parseFloat(precoInput?.value);
     
-    if (!isNaN(preco) && preco > 0) {
-      variacoes[tipo] = preco;
+    console.log(`📝 Variação ${tipo}:`, {
+      input: precoInput,
+      valor: precoInput?.value,
+      visivel: precoInput?.style.display
+    });
+    
+    if (precoInput && precoInput.value) {
+      const preco = parseFloat(precoInput.value);
+      
+      if (!isNaN(preco) && preco > 0) {
+        variacoes[tipo] = preco;
+        console.log(`✅ ${tipo}: R$ ${preco}`);
+      } else {
+        console.warn(`⚠️ ${tipo}: Preço inválido (${precoInput.value})`);
+      }
+    } else {
+      console.warn(`⚠️ ${tipo}: Campo vazio ou não encontrado`);
     }
   });
   
+  console.log('📦 Variações coletadas:', variacoes);
   return variacoes;
 }
 
@@ -61,7 +78,7 @@ function obterVariacoesComPrecos() {
 // MANTIDO: OBTER VARIAÇÕES SEM PREÇO (COMPATIBILIDADE)
 // ========================================
 function obterVariacoesSelecionadas() {
-  const checkboxes = document.querySelectorAll('input[name="variacao"]:checked');
+  const checkboxes = document.querySelectorAll('.variacao-checkbox:checked');
   return Array.from(checkboxes).map(cb => cb.value);
 }
 
@@ -71,16 +88,41 @@ function obterVariacoesSelecionadas() {
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   
+  console.log('📤 Formulário enviado');
+  
   if (!dishName.value.trim() || !dishDescription.value.trim()) {
     alert('❌ Preencha todos os campos obrigatórios!');
     return;
   }
 
-  // ✅ NOVA VALIDAÇÃO: Verifica se prato tem pelo menos uma variação com preço
+  // ✅ VALIDAÇÃO MELHORADA
   if (itemTipo.value === 'prato') {
+    const checkboxesMarcados = document.querySelectorAll('.variacao-checkbox:checked');
+    
+    console.log('🔍 Validando variações...');
+    console.log('Checkboxes marcados:', checkboxesMarcados.length);
+    
+    if (checkboxesMarcados.length === 0) {
+      alert('❌ Marque pelo menos uma variação para pratos!');
+      return;
+    }
+    
     const variacoesComPrecos = obterVariacoesComPrecos();
-    if (Object.keys(variacoesComPrecos).length === 0) {
-      alert('❌ Adicione pelo menos uma variação com preço para pratos!');
+    const quantidadeComPreco = Object.keys(variacoesComPrecos).length;
+    
+    console.log('Variações com preço:', quantidadeComPreco);
+    
+    if (quantidadeComPreco === 0) {
+      // Verifica qual variação está sem preço
+      checkboxesMarcados.forEach(cb => {
+        const tipo = cb.value;
+        const precoInput = document.querySelector(`[data-preco-variacao="${tipo}"]`);
+        if (!precoInput || !precoInput.value || parseFloat(precoInput.value) <= 0) {
+          console.error(`❌ ${tipo}: sem preço válido`);
+        }
+      });
+      
+      alert('❌ Adicione o preço para as variações marcadas!\n\nVerifique se preencheu todos os campos de preço.');
       return;
     }
   }
@@ -120,18 +162,25 @@ async function adicionarItem() {
     };
 
     if (tipo === 'bebida') {
-      // BEBIDA: Salva preço único e sem variações
       novoItem.preco = parseFloat(dishPrice.value);
-      novoItem.variacoes = {}; // Objeto vazio para compatibilidade
+      novoItem.variacoes = {};
     } else {
-      // PRATO: Salva variações com preços individuais
-      novoItem.variacoes = obterVariacoesComPrecos(); // ✅ NOVO: Objeto com preços
-      novoItem.preco = 0; // Não usado em pratos com variações
+      novoItem.variacoes = obterVariacoesComPrecos();
+      novoItem.preco = 0;
     }
+
+    console.log('💾 Salvando item:', novoItem);
 
     await push(pratosRef, novoItem);
     
     form.reset();
+    
+    // Limpa os campos de preço manualmente
+    document.querySelectorAll('[data-preco-variacao]').forEach(input => {
+      input.style.display = 'none';
+      input.value = '';
+    });
+    
     mostrarNotificacao(`✅ ${tipo === 'bebida' ? 'Bebida' : 'Prato'} adicionado com sucesso!`, 'sucesso');
     
   } catch (error) {
@@ -167,7 +216,7 @@ async function atualizarItem() {
       itemAtualizado.preco = parseFloat(dishPrice.value);
       itemAtualizado.variacoes = {};
     } else {
-      itemAtualizado.variacoes = obterVariacoesComPrecos(); // ✅ NOVO
+      itemAtualizado.variacoes = obterVariacoesComPrecos();
       itemAtualizado.preco = 0;
     }
 
@@ -192,6 +241,12 @@ function cancelarEdicao() {
   pratoIdEmEdicao = null;
   dadosOriginais = null;
   form.reset();
+  
+  // Esconde campos de preço
+  document.querySelectorAll('[data-preco-variacao]').forEach(input => {
+    input.style.display = 'none';
+    input.value = '';
+  });
   
   submitBtn.textContent = 'Adicionar Item';
   submitBtn.className = 'w-full bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-orange-600 transition-colors';
@@ -249,7 +304,6 @@ function criarCardItem(item, itemId) {
     ? '<span class="text-xs px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 rounded-full">Bebida</span>'
     : '<span class="text-xs px-2 py-1 bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 rounded-full">Prato</span>';
   
-  // ✅ NOVO: Exibe variações com PREÇOS INDIVIDUAIS
   let variacoesHtml = '';
   if (item.tipo === 'prato' && item.variacoes) {
     const emojis = {
@@ -261,9 +315,7 @@ function criarCardItem(item, itemId) {
       vegetariano: '🥗'
     };
     
-    // Verifica se variações é objeto (com preços) ou array (sem preços - compatibilidade)
     if (typeof item.variacoes === 'object' && !Array.isArray(item.variacoes)) {
-      // NOVO FORMATO: Objeto com preços
       const variacoesEntries = Object.entries(item.variacoes);
       if (variacoesEntries.length > 0) {
         variacoesHtml = '<div class="mt-3 space-y-1">';
@@ -278,7 +330,6 @@ function criarCardItem(item, itemId) {
         variacoesHtml += '</div>';
       }
     } else if (Array.isArray(item.variacoes) && item.variacoes.length > 0) {
-      // FORMATO ANTIGO: Array sem preços (COMPATIBILIDADE)
       variacoesHtml = `<div class="flex flex-wrap gap-1 mt-2">
          ${item.variacoes.map(v => {
            return `<span class="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded">${emojis[v] || ''} ${v}</span>`;
@@ -287,7 +338,6 @@ function criarCardItem(item, itemId) {
     }
   }
   
-  // Preço para bebidas
   const precoHtml = item.tipo === 'bebida'
     ? `<p class="text-primary font-bold mt-2">R$ ${item.preco.toFixed(2).replace('.', ',')}</p>`
     : '';
@@ -348,7 +398,6 @@ async function editarItem(itemId) {
     modoEdicao = true;
     pratoIdEmEdicao = itemId;
     
-    // Preenche campos básicos
     itemTipo.value = item.tipo || 'prato';
     dishName.value = item.nome;
     dishDescription.value = item.descricao;
@@ -357,10 +406,8 @@ async function editarItem(itemId) {
     if (item.tipo === 'bebida') {
       dishPrice.value = item.preco;
     } else {
-      // ✅ NOVO: Preenche variações COM PREÇOS
       if (typeof item.variacoes === 'object' && !Array.isArray(item.variacoes)) {
-        // Formato novo: objeto com preços
-        document.querySelectorAll('input[name="variacao"]').forEach(cb => {
+        document.querySelectorAll('.variacao-checkbox').forEach(cb => {
           const tipo = cb.value;
           const temVariacao = item.variacoes[tipo] !== undefined;
           
@@ -370,18 +417,17 @@ async function editarItem(itemId) {
             const precoInput = document.querySelector(`[data-preco-variacao="${tipo}"]`);
             if (precoInput) {
               precoInput.value = item.variacoes[tipo];
+              precoInput.style.display = 'block';
             }
           }
         });
       } else if (Array.isArray(item.variacoes)) {
-        // Formato antigo: array sem preços (COMPATIBILIDADE)
-        document.querySelectorAll('input[name="variacao"]').forEach(cb => {
+        document.querySelectorAll('.variacao-checkbox').forEach(cb => {
           cb.checked = item.variacoes && item.variacoes.includes(cb.value);
         });
       }
     }
     
-    // Atualiza visibilidade dos campos
     document.getElementById('variacoes-container').style.display = 
       item.tipo === 'bebida' ? 'none' : 'block';
     document.getElementById('preco-bebida-container').style.display = 
@@ -479,4 +525,4 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-console.log('✅ Sistema de gerenciamento carregado com preços por variação!');
+console.log('✅ Sistema carregado com logs de debug!');

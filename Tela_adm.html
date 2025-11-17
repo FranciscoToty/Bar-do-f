@@ -40,19 +40,6 @@
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     }
     body { min-height: max(884px, 100dvh); }
-    
-    /* ✅ NOVO: Animação para mostrar campo de preço */
-    .preco-input-container {
-      max-height: 0;
-      opacity: 0;
-      overflow: hidden;
-      transition: all 0.3s ease;
-    }
-    .variacao-checkbox:checked ~ .preco-input-container {
-      max-height: 100px;
-      opacity: 1;
-      margin-top: 0.5rem;
-    }
   </style>
 </head>
 
@@ -109,7 +96,7 @@
             ></textarea>
           </div>
           
-          <!-- ✅ NOVO: Variações COM PREÇOS (apenas para pratos) -->
+          <!-- ✅ NOVO FORMATO: Variações COM PREÇOS -->
           <div id="variacoes-container" class="space-y-3">
             <label class="block text-sm font-medium">Variações e Preços</label>
             <p class="text-xs text-subtext-light dark:text-subtext-dark mb-2">
@@ -117,111 +104,105 @@
             </p>
             
             <!-- Frango -->
-            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" name="variacao" value="frango" class="variacao-checkbox w-4 h-4 text-primary rounded focus:ring-primary">
+            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3" id="container-frango">
+              <label class="flex items-center gap-2 cursor-pointer mb-2">
+                <input type="checkbox" id="var-frango" value="frango" class="variacao-checkbox w-4 h-4 text-primary rounded focus:ring-primary">
                 <span class="text-sm font-medium flex-grow">🐔 Frango</span>
               </label>
-              <div class="preco-input-container">
-                <input 
-                  type="number" 
-                  data-preco-variacao="frango"
-                  step="0.01" 
-                  min="0"
-                  placeholder="Preço (R$)"
-                  class="w-full border rounded-md py-2 px-3 text-sm dark:bg-gray-700 dark:border-gray-600"
-                />
-              </div>
+              <input 
+                type="number" 
+                data-preco-variacao="frango"
+                step="0.01" 
+                min="0"
+                placeholder="Preço (R$)"
+                style="display: none;"
+                class="preco-input w-full border rounded-md py-2 px-3 text-sm dark:bg-gray-700 dark:border-gray-600"
+              />
             </div>
 
             <!-- Gado -->
-            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" name="variacao" value="gado" class="variacao-checkbox w-4 h-4 text-primary rounded focus:ring-primary">
+            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3" id="container-gado">
+              <label class="flex items-center gap-2 cursor-pointer mb-2">
+                <input type="checkbox" id="var-gado" value="gado" class="variacao-checkbox w-4 h-4 text-primary rounded focus:ring-primary">
                 <span class="text-sm font-medium flex-grow">🥩 Gado (Carne Bovina)</span>
               </label>
-              <div class="preco-input-container">
-                <input 
-                  type="number" 
-                  data-preco-variacao="gado"
-                  step="0.01" 
-                  min="0"
-                  placeholder="Preço (R$)"
-                  class="w-full border rounded-md py-2 px-3 text-sm dark:bg-gray-700 dark:border-gray-600"
-                />
-              </div>
+              <input 
+                type="number" 
+                data-preco-variacao="gado"
+                step="0.01" 
+                min="0"
+                placeholder="Preço (R$)"
+                style="display: none;"
+                class="preco-input w-full border rounded-md py-2 px-3 text-sm dark:bg-gray-700 dark:border-gray-600"
+              />
             </div>
 
             <!-- Porco -->
-            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" name="variacao" value="porco" class="variacao-checkbox w-4 h-4 text-primary rounded focus:ring-primary">
+            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3" id="container-porco">
+              <label class="flex items-center gap-2 cursor-pointer mb-2">
+                <input type="checkbox" id="var-porco" value="porco" class="variacao-checkbox w-4 h-4 text-primary rounded focus:ring-primary">
                 <span class="text-sm font-medium flex-grow">🐷 Porco</span>
               </label>
-              <div class="preco-input-container">
-                <input 
-                  type="number" 
-                  data-preco-variacao="porco"
-                  step="0.01" 
-                  min="0"
-                  placeholder="Preço (R$)"
-                  class="w-full border rounded-md py-2 px-3 text-sm dark:bg-gray-700 dark:border-gray-600"
-                />
-              </div>
+              <input 
+                type="number" 
+                data-preco-variacao="porco"
+                step="0.01" 
+                min="0"
+                placeholder="Preço (R$)"
+                style="display: none;"
+                class="preco-input w-full border rounded-md py-2 px-3 text-sm dark:bg-gray-700 dark:border-gray-600"
+              />
             </div>
 
             <!-- Peixe -->
-            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" name="variacao" value="peixe" class="variacao-checkbox w-4 h-4 text-primary rounded focus:ring-primary">
+            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3" id="container-peixe">
+              <label class="flex items-center gap-2 cursor-pointer mb-2">
+                <input type="checkbox" id="var-peixe" value="peixe" class="variacao-checkbox w-4 h-4 text-primary rounded focus:ring-primary">
                 <span class="text-sm font-medium flex-grow">🐟 Peixe</span>
               </label>
-              <div class="preco-input-container">
-                <input 
-                  type="number" 
-                  data-preco-variacao="peixe"
-                  step="0.01" 
-                  min="0"
-                  placeholder="Preço (R$)"
-                  class="w-full border rounded-md py-2 px-3 text-sm dark:bg-gray-700 dark:border-gray-600"
-                />
-              </div>
+              <input 
+                type="number" 
+                data-preco-variacao="peixe"
+                step="0.01" 
+                min="0"
+                placeholder="Preço (R$)"
+                style="display: none;"
+                class="preco-input w-full border rounded-md py-2 px-3 text-sm dark:bg-gray-700 dark:border-gray-600"
+              />
             </div>
 
             <!-- Vegano -->
-            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" name="variacao" value="vegano" class="variacao-checkbox w-4 h-4 text-primary rounded focus:ring-primary">
+            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3" id="container-vegano">
+              <label class="flex items-center gap-2 cursor-pointer mb-2">
+                <input type="checkbox" id="var-vegano" value="vegano" class="variacao-checkbox w-4 h-4 text-primary rounded focus:ring-primary">
                 <span class="text-sm font-medium flex-grow">🌱 Vegano</span>
               </label>
-              <div class="preco-input-container">
-                <input 
-                  type="number" 
-                  data-preco-variacao="vegano"
-                  step="0.01" 
-                  min="0"
-                  placeholder="Preço (R$)"
-                  class="w-full border rounded-md py-2 px-3 text-sm dark:bg-gray-700 dark:border-gray-600"
-                />
-              </div>
+              <input 
+                type="number" 
+                data-preco-variacao="vegano"
+                step="0.01" 
+                min="0"
+                placeholder="Preço (R$)"
+                style="display: none;"
+                class="preco-input w-full border rounded-md py-2 px-3 text-sm dark:bg-gray-700 dark:border-gray-600"
+              />
             </div>
 
             <!-- Vegetariano -->
-            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" name="variacao" value="vegetariano" class="variacao-checkbox w-4 h-4 text-primary rounded focus:ring-primary">
+            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3" id="container-vegetariano">
+              <label class="flex items-center gap-2 cursor-pointer mb-2">
+                <input type="checkbox" id="var-vegetariano" value="vegetariano" class="variacao-checkbox w-4 h-4 text-primary rounded focus:ring-primary">
                 <span class="text-sm font-medium flex-grow">🥗 Vegetariano</span>
               </label>
-              <div class="preco-input-container">
-                <input 
-                  type="number" 
-                  data-preco-variacao="vegetariano"
-                  step="0.01" 
-                  min="0"
-                  placeholder="Preço (R$)"
-                  class="w-full border rounded-md py-2 px-3 text-sm dark:bg-gray-700 dark:border-gray-600"
-                />
-              </div>
+              <input 
+                type="number" 
+                data-preco-variacao="vegetariano"
+                step="0.01" 
+                min="0"
+                placeholder="Preço (R$)"
+                style="display: none;"
+                class="preco-input w-full border rounded-md py-2 px-3 text-sm dark:bg-gray-700 dark:border-gray-600"
+              />
             </div>
           </div>
           
@@ -294,10 +275,7 @@
     }
     
     const usuarioAdmin = auth.getUsuarioLogado();
-    console.log('✅ Admin autenticado:', usuarioAdmin.nome);
-    
-    document.getElementById('admin-info').textContent = 
-      `Bem-vindo, ${usuarioAdmin.nome} (Admin)`;
+    document.getElementById('admin-info').textContent = `Bem-vindo, ${usuarioAdmin.nome} (Admin)`;
     
     document.getElementById('logoutBtn').addEventListener('click', () => {
       if (confirm('Deseja sair do painel de administração?')) {
@@ -306,7 +284,7 @@
     });
     
     // ========================================
-    // ✅ NOVO: CONTROLA VISIBILIDADE BASEADO NO TIPO
+    // CONTROLA VISIBILIDADE BASEADO NO TIPO
     // ========================================
     const tipoSelect = document.getElementById('item-tipo');
     const variacoesContainer = document.getElementById('variacoes-container');
@@ -315,21 +293,18 @@
     
     function atualizarCamposPorTipo() {
       if (tipoSelect.value === 'bebida') {
-        // Mostra preço único, esconde variações
         variacoesContainer.style.display = 'none';
         precoBebidaContainer.style.display = 'block';
         dishPrice.required = true;
         
-        // Desmarca todas as variações
-        document.querySelectorAll('input[name="variacao"]').forEach(cb => {
+        document.querySelectorAll('.variacao-checkbox').forEach(cb => {
           cb.checked = false;
         });
-        // Limpa preços das variações
         document.querySelectorAll('[data-preco-variacao]').forEach(input => {
           input.value = '';
+          input.style.display = 'none';
         });
       } else {
-        // Mostra variações, esconde preço único
         variacoesContainer.style.display = 'block';
         precoBebidaContainer.style.display = 'none';
         dishPrice.required = false;
@@ -338,7 +313,29 @@
     }
     
     tipoSelect.addEventListener('change', atualizarCamposPorTipo);
-    atualizarCamposPorTipo(); // Inicializa corretamente
+    atualizarCamposPorTipo();
+    
+    // ========================================
+    // ✅ CONTROLA APARIÇÃO DOS CAMPOS DE PREÇO
+    // ========================================
+    document.querySelectorAll('.variacao-checkbox').forEach(checkbox => {
+      checkbox.addEventListener('change', function() {
+        const container = this.parentElement.parentElement;
+        const precoInput = container.querySelector('[data-preco-variacao="' + this.value + '"]');
+        
+        if (precoInput) {
+          if (this.checked) {
+            precoInput.style.display = 'block';
+            precoInput.focus();
+          } else {
+            precoInput.style.display = 'none';
+            precoInput.value = '';
+          }
+        }
+      });
+    });
+    
+    console.log('✅ Checkboxes configurados!');
   </script>
 
   <!-- Script principal da tela admin -->
